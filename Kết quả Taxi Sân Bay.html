@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả Taxi Sân Bay | Booking.com - The Ethereal Navigator</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration based on Design System -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            900: '#001629',
+                            container: '#002b49'
+                        },
+                        secondary: {
+                            500: '#00658d'
+                        },
+                        tertiary: {
+                            accent: '#ffb870'
+                        },
+                        surface: {
+                            bg: '#f6fafe',
+                            low: '#f0f4f8',
+                            highest: '#dfe3e7',
+                            lowest: '#ffffff',
+                        },
+                        on: {
+                            surface: '#171c1f'
+                        }
+                    },
+                    boxShadow: {
+                        'ethereal': '0 12px 32px rgba(23, 28, 31, 0.06)',
+                        'dropdown': '0 20px 50px rgba(0, 22, 41, 0.15)',
+                    },
+                    borderRadius: {
+                        'DEFAULT': '1rem',
+                        'md': '1.5rem',
+                        'xl': '3rem',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f6fafe;
+            color: #171c1f;
+            -webkit-font-smoothing: antialiased;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Checkbox */
+        .ethereal-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 0.375rem;
+            background-color: #f0f4f8;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ethereal-checkbox:checked {
+            background-color: #00658d;
+        }
+        .ethereal-checkbox:checked::after {
+            content: '';
+            width: 0.375rem;
+            height: 0.625rem;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- Icons ---
+        const IconBed = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>;
+        const IconPlane = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5.5 4L5 15.5 3 15l-1 1 3 3 1-1-.5-2 3.5-3.5 4 5.5h1.2l.6-1.1c.4-.2.7-.6.6-1.1Z"/></svg>;
+        const IconTaxi = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/><rect width="4" height="4" x="10" y="3" rx="1"/></svg>;
+        const IconStore = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>;
+        const IconMedical = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10Z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
+        const IconHelp = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const IconUser = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconSuitcase = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+        const IconArrowRight = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>;
+        const IconFilter = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
+        const IconSparkles = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+        const IconClock = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const IconCalendar = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+
+        // Mock Taxi Results
+        const taxiResults = [
+            {
+                id: 1,
+                type: 'Tiêu chuẩn (Standard)',
+                model: 'Toyota Vios hoặc tương đương',
+                passengers: 3,
+                suitcases: 2,
+                time: '45 phút',
+                price: 320000,
+                provider: 'Airport Relay',
+                rating: '4.8',
+                tag: 'Giá tốt nhất',
+                img: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+            },
+            {
+                id: 2,
+                type: 'Xe sang (Executive)',
+                model: 'Mercedes-Benz E-Class',
+                passengers: 3,
+                suitcases: 2,
+                time: '40 phút',
+                price: 850000,
+                provider: 'Premium Leads',
+                rating: '4.9',
+                tag: 'Trải nghiệm cao cấp',
+                img: 'https://images.unsplash.com/photo-1563720223185-11003d516935?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+            },
+            {
+                id: 3,
+                type: 'Xe lớn (People Carrier)',
+                model: 'Ford Transit / Toyota Hiace',
+                passengers: 7,
+                suitcases: 5,
+                time: '50 phút',
+                price: 550000,
+                provider: 'Group Connect',
+                rating: '4.7',
+                tag: 'Phù hợp đoàn đông',
+                img: 'https://images.unsplash.com/photo-1559416523-140ddc3d238c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+            }
+        ];
+
+        const App = () => {
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-hidden bg-surface-bg">
+                    <HeaderWithNav />
+                    <CompactSearchSummary />
+                    
+                    <main className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto w-full py-8 flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        <TaxiSidebarFilters />
+                        <section className="lg:col-span-3 flex flex-col space-y-4">
+                            <div className="flex justify-between items-center px-1 mb-2">
+                                <h2 className="font-bold text-primary-900 text-lg">{taxiResults.length} loại xe phù hợp</h2>
+                                <div className="text-sm font-medium text-on-surface/60">Sắp xếp theo: <span className="text-primary-900 font-bold cursor-pointer">Giá thấp nhất</span></div>
+                            </div>
+                            {taxiResults.map(taxi => <TaxiResultCard key={taxi.id} taxi={taxi} />)}
+                        </section>
+                    </main>
+
+                    <FloatingAIAssistant />
+                </div>
+            );
+        };
+
+        // --- Components ---
+
+        const HeaderWithNav = () => (
+            <header className="bg-primary-900 text-white pt-4 pb-2">
+                <div className="px-6 md:px-12 xl:px-24 flex items-center justify-between mb-4">
+                    <div className="text-xl font-bold tracking-tight cursor-pointer">Booking.com</div>
+                    <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px]">VN</div>
+                        <div className="w-8 h-8 rounded-full bg-tertiary-accent flex items-center justify-center text-primary-900 font-bold">T</div>
+                    </div>
+                </div>
+                <div className="px-6 md:px-12 xl:px-24 flex space-x-2 overflow-x-auto hide-scrollbar pb-2">
+                    <NavPill icon={<IconBed />} text="Lưu trú" />
+                    <NavPill icon={<IconPlane />} text="Chuyến bay" />
+                    <NavPill icon={<IconStore />} text="Cửa hàng" />
+                    <NavPill icon={<IconMedical />} text="Y tế" />
+                    <NavPill icon={<IconHelp />} text="Hỗ trợ" />
+                    <NavPill icon={<IconTaxi />} text="Taxi sân bay" active />
+                </div>
+            </header>
+        );
+
+        const NavPill = ({ icon, text, active }) => (
+            <button className={`flex items-center space-x-2 px-4 py-2 rounded-full whitespace-nowrap transition-all text-xs font-semibold ${active ? 'bg-white/10 backdrop-blur-md text-white border border-white/20' : 'text-white/70 hover:bg-white/5'}`}>
+                {icon} <span>{text}</span>
+            </button>
+        );
+
+        const CompactSearchSummary = () => (
+            <div className="bg-primary-900 pb-12 pt-2 px-6 md:px-12 xl:px-24 rounded-b-3xl">
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-3 justify-between shadow-dropdown">
+                    <div className="flex flex-wrap items-center text-white gap-4 px-2">
+                        <div className="flex items-center space-x-3 font-semibold text-sm md:text-base">
+                            <span>Sân bay Nội Bài (HAN)</span>
+                            <IconArrowRight />
+                            <span>Quận Hoàn Kiếm, Hà Nội</span>
+                        </div>
+                        <div className="hidden md:block w-[1px] h-6 bg-white/20"></div>
+                        <div className="text-sm font-medium text-white/80 flex items-center space-x-2">
+                            <IconCalendar /> <span>20 Thg 5, 14:30</span>
+                        </div>
+                        <div className="hidden md:block w-[1px] h-6 bg-white/20"></div>
+                        <div className="text-sm font-medium text-white/80">2 Người</div>
+                    </div>
+                    <button className="mt-4 md:mt-0 bg-white text-primary-900 font-bold px-6 py-2 rounded-xl text-sm shadow-ethereal hover:bg-surface-low transition-all">Sửa tìm kiếm</button>
+                </div>
+            </div>
+        );
+
+        const TaxiSidebarFilters = () => (
+            <aside className="hidden lg:flex flex-col gap-6 -mt-6">
+                <div className="bg-surface-lowest rounded-2xl p-6 shadow-ethereal space-y-8">
+                    <div className="flex justify-between items-center pb-2">
+                        <h3 className="font-bold text-primary-900 text-lg flex items-center"><IconFilter /><span className="ml-2">Bộ lọc</span></h3>
+                        <button className="text-xs font-bold text-secondary-500">Xoá tất cả</button>
+                    </div>
+
+                    <div>
+                        <h4 className="font-bold text-primary-900 text-sm mb-4 uppercase tracking-widest text-[10px]">Loại phương tiện</h4>
+                        <div className="space-y-4">
+                            {['Tiêu chuẩn', 'Executive', 'Van / Xe lớn'].map(type => (
+                                <label key={type} className="flex items-center space-x-3 cursor-pointer group">
+                                    <input type="checkbox" className="ethereal-checkbox" defaultChecked={type==='Tiêu chuẩn'} />
+                                    <span className="text-sm font-medium text-on-surface/80 group-hover:text-primary-900 transition-colors">{type}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="font-bold text-primary-900 text-sm mb-4 uppercase tracking-widest text-[10px]">Tiện ích đi kèm</h4>
+                        <div className="space-y-4">
+                            {['Đón tại sảnh (Meet & Greet)', 'Đợi miễn phí 60p', 'Wifi trên xe', 'Hủy chuyến linh hoạt'].map(feat => (
+                                <label key={feat} className="flex items-center space-x-3 cursor-pointer group">
+                                    <input type="checkbox" className="ethereal-checkbox" />
+                                    <span className="text-sm font-medium text-on-surface/80 group-hover:text-primary-900 transition-colors">{feat}</span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        );
+
+        const TaxiResultCard = ({ taxi }) => (
+            <div className="bg-surface-lowest rounded-[2rem] shadow-ethereal border border-surface-highest/20 overflow-hidden flex flex-col md:flex-row group hover:shadow-dropdown transition-all duration-300">
+                {/* Image Section */}
+                <div className="md:w-64 h-48 md:h-auto overflow-hidden relative shrink-0">
+                    <img src={taxi.img} alt={taxi.type} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute top-4 left-4 bg-primary-900/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-tighter">
+                        {taxi.provider}
+                    </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="flex-1 p-6 flex flex-col justify-between">
+                    <div>
+                        <div className="flex justify-between items-start mb-1">
+                            <h3 className="font-bold text-xl text-primary-900">{taxi.type}</h3>
+                            <div className="flex items-center space-x-1 bg-secondary-500/10 text-secondary-500 px-2 py-0.5 rounded-lg text-xs font-bold">
+                                <span>★</span> <span>{taxi.rating}</span>
+                            </div>
+                        </div>
+                        <p className="text-sm text-on-surface/60 mb-4">{taxi.model}</p>
+                        
+                        <div className="flex flex-wrap gap-4 mb-4">
+                            <div className="flex items-center space-x-1.5 text-on-surface/50 text-xs font-semibold">
+                                <IconUser /> <span>Tối đa {taxi.passengers} khách</span>
+                            </div>
+                            <div className="flex items-center space-x-1.5 text-on-surface/50 text-xs font-semibold">
+                                <IconSuitcase /> <span>{taxi.suitcases} vali lớn</span>
+                            </div>
+                            <div className="flex items-center space-x-1.5 text-secondary-500 text-xs font-bold">
+                                <IconClock /> <span>Dự kiến {taxi.time}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-2">
+                            <span className="text-[10px] font-bold bg-surface-low text-primary-900/60 px-2 py-1 rounded-md uppercase">Đón tại sảnh</span>
+                            <span className="text-[10px] font-bold bg-surface-low text-primary-900/60 px-2 py-1 rounded-md uppercase">Giá trọn gói</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Pricing Section - tonal background */}
+                <div className="md:w-56 bg-surface-low/50 p-6 flex flex-col justify-center items-center md:items-end border-t md:border-t-0 md:border-l border-surface-highest/30">
+                    <span className="text-[10px] font-bold text-secondary-500 uppercase tracking-widest mb-1">{taxi.tag}</span>
+                    <p className="text-2xl font-bold text-primary-900 mb-4">{taxi.price.toLocaleString('vi-VN')} đ</p>
+                    <button className="w-full bg-secondary-500 text-white font-bold py-3 rounded-2xl hover:bg-primary-900 transition-all shadow-md">Chọn xe</button>
+                    <p className="text-[10px] text-on-surface/40 mt-3 text-center md:text-right">Hủy miễn phí đến 24h trước khi đón</p>
+                </div>
+            </div>
+        );
+
+        const FloatingAIAssistant = () => (
+            <div className="fixed bottom-10 right-10 z-[200] group cursor-pointer">
+                <button className="relative w-16 h-16 bg-primary-900 rounded-full flex items-center justify-center text-tertiary-accent shadow-dropdown border border-white/10 overflow-hidden hover:scale-105 transition-all">
+                    <div className="absolute inset-0 bg-tertiary-accent/20 blur-xl animate-pulse"></div>
+                    <IconSparkles />
+                </button>
+            </div>
+        );
+
+        const Footer = () => (
+            <footer className="bg-primary-900 text-white rounded-t-[3rem] pt-16 pb-10 mt-12 text-center">
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">© 1996–2026 Booking.com™ - The Ethereal Navigator</p>
+            </footer>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

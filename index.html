@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Booking.com - The Ethereal Navigator</title>
     
     <!-- Google Fonts: Plus Jakarta Sans -->
@@ -10,6 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Leaflet CSS & JS for Real Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -44,11 +48,14 @@
                     },
                     boxShadow: {
                         'ethereal': '0 12px 32px rgba(23, 28, 31, 0.06)',
+                        'ethereal-sm': '0 4px 12px rgba(23, 28, 31, 0.04)',
+                        'dropdown': '0 20px 50px rgba(0, 22, 41, 0.15)',
                     },
                     borderRadius: {
                         'DEFAULT': '1rem',
                         'md': '1.5rem',
                         'xl': '3rem',
+                        'full': '9999px',
                     }
                 }
             }
@@ -62,12 +69,11 @@
 
     <style>
         body {
-            background-color: #f6fafe; /* surface-bg */
-            color: #171c1f; /* on-surface */
+            background-color: #f6fafe;
+            color: #171c1f;
             -webkit-font-smoothing: antialiased;
         }
         
-        /* Hide scrollbar for horizontal scrolling but keep functionality */
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -76,85 +82,448 @@
             scrollbar-width: none;
         }
 
-        /* Custom Island Shape for Map */
-        .island-shape {
-            background-color: #eef3de;
-            border-radius: 43% 57% 38% 62% / 47% 41% 59% 53%;
-            box-shadow: inset 20px 20px 40px rgba(255,255,255,0.5), inset -10px -10px 20px rgba(0,0,0,0.02);
+        /* Tinh chỉnh bản đồ Leaflet Fullscreen */
+        .leaflet-container {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f6fafe;
         }
-        .island-shape-inner {
-            background-color: #e0ebd1;
-            border-radius: 50% 40% 60% 40% / 40% 50% 40% 60%;
-            filter: blur(4px);
+        .leaflet-control-attribution {
+            display: none;
+        }
+        
+        /* Hiệu ứng mượt cho Bottom Sheet */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body>
+<body class="overflow-x-hidden">
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- Icons (Inline SVGs) ---
-        const IconBed = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>;
-        const IconPlane = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5.5 4L5 15.5 3 15l-1 1 3 3 1-1-.5-2 3.5-3.5 4 5.5h1.2l.6-1.1c.4-.2.7-.6.6-1.1Z"/></svg>;
-        const IconCar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>;
-        const IconTicket = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>;
-        const IconTaxi = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/><rect width="4" height="4" x="10" y="3" rx="1"/></svg>;
-        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
-        const IconCalendar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-        const IconGlobe = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
-        const IconStar = () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-        const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
-        const IconWifi = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>;
-        const IconMap = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>;
-        const IconUtensils = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2 M7 2v20 M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>;
-        const IconStore = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>;
-        const IconMedical = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10Z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
-        const IconHelp = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
-        const IconSparkles = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
-        const IconPhone = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
-        const IconCamera = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>;
+        // --- ALL Icons (Merged) ---
+        const IconBed = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>;
+        const IconPlane = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5.5 4L5 15.5 3 15l-1 1 3 3 1-1-.5-2 3.5-3.5 4 5.5h1.2l.6-1.1c.4-.2.7-.6.6-1.1Z"/></svg>;
+        const IconCar = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>;
+        const IconTicket = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>;
+        const IconTaxi = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/><rect width="4" height="4" x="10" y="3" rx="1"/></svg>;
+        const IconUser = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconCalendar = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+        const IconGlobe = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
+        const IconSearch = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+        const IconWifi = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/></svg>;
+        const IconUtensils = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2 M7 2v20 M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>;
+        const IconMap = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>;
+        const IconMedical = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10Z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
+        const IconStore = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>;
+        const IconHelp = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const IconPhone = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+        const IconCamera = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>;
+        const IconTool = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>;
+        const IconStar = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+        const IconSparkles = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+        const IconArrowLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
+        const IconFilter = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
 
         const App = () => {
+            const [isMapFullScreen, setIsMapFullScreen] = React.useState(false);
+
+            React.useEffect(() => {
+                if (isMapFullScreen) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = 'auto';
+                }
+            }, [isMapFullScreen]);
+
             return (
                 <div className="min-h-screen flex flex-col relative overflow-hidden">
                     <HeaderAndHero />
                     
-                    <main className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto -mt-10 relative z-10 pb-20 flex-1">
+                    <main className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto -mt-10 relative z-10 pb-10 flex-1">
                         <SearchModule />
                         <OffersSection />
                         <PropertyTypes />
-                        <MapSection />
+                        <MapSection onOpenFullMap={() => setIsMapFullScreen(true)} />
                         <ToursAndTickets />
                         <DiningAndNightlife />
                         <EssentialServices />
                         <UniqueProperties />
-                        <PhuQuocAlbum /> {/* Section updated from TrendingDestinations */}
+                        <PhuQuocAlbum />
                     </main>
 
                     <Footer />
-                    
                     <FloatingAIAssistant />
+
+                    {/* LỚP BẢN ĐỒ FULL-SCREEN MỚI */}
+                    {isMapFullScreen && (
+                        <FullScreenMap onClose={() => setIsMapFullScreen(false)} />
+                    )}
                 </div>
             );
         };
 
-        // --- Components ---
+        // --- CORE MODULE: ETHEREAL MAP EXPERIENCE ---
 
-        const FloatingAIAssistant = () => {
+        const mockMapData = {
+            liveEvents: [
+                {
+                    id: 'e1',
+                    title: 'Sunset Acoustic Live',
+                    category: 'live',
+                    location: 'Sunset Sanato Beach Club',
+                    lat: 10.1333,
+                    lng: 103.9667,
+                    startTime: '17:00',
+                    endTime: '19:30',
+                    price: 'Từ 150.000đ',
+                    img: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=400&q=80',
+                }
+            ],
+            pois: [
+                // Layer 2: Attractions
+                { id: 'p1', title: 'Chợ Đêm Phú Quốc', category: 'attraction', lat: 10.2173, lng: 103.9595, rating: '4.5', reviews: '3.2k' },
+                { id: 'p2', title: 'Ga Cáp Treo Hòn Thơm', category: 'attraction', lat: 10.0163, lng: 104.0151, rating: '4.8', reviews: '5.1k' },
+                { id: 'p3', title: 'VinWonders Phú Quốc', category: 'attraction', lat: 10.3340, lng: 103.8566, rating: '4.7', reviews: '8k' },
+                // Layer 3: Accommodation
+                { id: 'h1', title: 'JW Marriott Emerald Bay', category: 'accommodation', lat: 10.0240, lng: 104.0100, rating: '4.9', reviews: '1.5k', price: '9.500.000đ' },
+                { id: 'h2', title: 'Vinpearl Discovery', category: 'accommodation', lat: 10.3300, lng: 103.8500, rating: '4.6', reviews: '2.2k', price: '4.200.000đ' },
+                // Layer 4: Dining
+                { id: 'd1', title: 'Nhà hàng Xin Chào', category: 'dining', lat: 10.2185, lng: 103.9580, rating: '4.4', reviews: '1.8k' },
+                { id: 'd2', title: 'Búp Restaurant', category: 'dining', lat: 10.2160, lng: 103.9600, rating: '4.5', reviews: '900' },
+                // Layer 6: Medical
+                { id: 'm1', title: 'Bệnh viện Vinmec', category: 'medical', lat: 10.3350, lng: 103.8600, phone: '0297 3985 588' },
+                { id: 'm2', title: 'TT Y tế TP Phú Quốc', category: 'medical', lat: 10.2150, lng: 103.9650, phone: '0297 3846 074' },
+                // Layer 7: Utilities
+                { id: 'u1', title: 'ATM Vietcombank', category: 'utility', lat: 10.2170, lng: 103.9590 },
+                { id: 'u2', title: 'Bưu điện Phú Quốc', category: 'utility', lat: 10.2180, lng: 103.9610 }
+            ]
+        };
+
+        const categoryMeta = {
+            all: { label: 'Tất cả', color: 'secondary-500', icon: IconMap },
+            live: { label: 'Sao Vàng LIVE', color: 'tertiary-accent', icon: IconStar },
+            attraction: { label: 'Điểm tham quan', color: 'primary-900', icon: IconMap },
+            accommodation: { label: 'Lưu trú', color: 'secondary-500', icon: IconBed },
+            dining: { label: 'Ẩm thực', color: 'orange-500', icon: IconUtensils },
+            medical: { label: 'Y tế & Khẩn cấp', color: 'red-500', icon: IconMedical },
+            utility: { label: 'Tiện ích', color: 'blue-400', icon: IconTool }
+        };
+
+        const FullScreenMap = ({ onClose }) => {
+            const mapContainerRef = React.useRef(null);
+            const mapInstanceRef = React.useRef(null);
+            const markersLayerRef = React.useRef(L.layerGroup());
+            const [selectedLocation, setSelectedLocation] = React.useState(null);
+            const [activeCategory, setActiveCategory] = React.useState('all');
+
+            const renderMarkers = (category) => {
+                if (!mapInstanceRef.current) return;
+                
+                markersLayerRef.current.clearLayers();
+
+                const filteredPois = category === 'all' 
+                    ? [...mockMapData.pois, ...mockMapData.liveEvents] 
+                    : [...mockMapData.pois, ...mockMapData.liveEvents].filter(p => p.category === category);
+
+                filteredPois.forEach(poi => {
+                    let icon;
+                    if (poi.category === 'live') {
+                        const starIconHtml = `
+                            <div class="relative flex items-center justify-center cursor-pointer">
+                                <div class="absolute w-14 h-14 bg-[#ffb870]/40 rounded-full animate-ping"></div>
+                                <div class="absolute w-10 h-10 bg-[#ffb870]/30 rounded-full"></div>
+                                <div class="w-7 h-7 bg-[#ffb870] rounded-full shadow-[0_0_15px_rgba(255,184,112,0.6)] z-10 border-[2px] border-white flex items-center justify-center">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                            </div>
+                        `;
+                        icon = L.divIcon({ className: '', html: starIconHtml, iconSize: [56, 56], iconAnchor: [28, 28] });
+                    } else {
+                        const color = poi.category === 'medical' ? '#ef4444' : (poi.category === 'dining' ? '#f97316' : '#00658d');
+                        const iconHtml = `
+                            <div class="w-8 h-8 bg-white rounded-full shadow-ethereal flex items-center justify-center border-2 cursor-pointer transform hover:scale-110 transition-transform" style="border-color: ${color}; color: ${color}">
+                                <div class="w-2 h-2 rounded-full" style="background-color: ${color}"></div>
+                            </div>
+                        `;
+                        icon = L.divIcon({ className: '', html: iconHtml, iconSize: [32, 32], iconAnchor: [16, 16] });
+                    }
+
+                    const marker = L.marker([poi.lat, poi.lng], { icon }).addTo(markersLayerRef.current);
+                    marker.on('click', () => {
+                        setSelectedLocation(poi);
+                        mapInstanceRef.current.flyTo([poi.lat - 0.015, poi.lng], 14, { duration: 0.8 });
+                    });
+                });
+            };
+
+            React.useEffect(() => {
+                if (!mapInstanceRef.current && mapContainerRef.current) {
+                    mapInstanceRef.current = L.map(mapContainerRef.current, {
+                        zoomControl: false,
+                        attributionControl: false
+                    }).setView([10.2289, 103.9572], 11);
+
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                        maxZoom: 19,
+                    }).addTo(mapInstanceRef.current);
+
+                    markersLayerRef.current.addTo(mapInstanceRef.current);
+                }
+
+                renderMarkers(activeCategory);
+
+                return () => {
+                    if (mapInstanceRef.current) {
+                        mapInstanceRef.current.remove();
+                        mapInstanceRef.current = null;
+                    }
+                };
+            }, [activeCategory]);
+
+            // Hàm xử lý tương tác của các nút bấm (Mock actions)
+            const handleActionClick = (actionName, locationInfo) => {
+                alert(`Đang thực hiện thao tác: "${actionName}" cho địa điểm [${locationInfo.title}]...`);
+            };
+
             return (
-                <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 flex flex-col items-end group cursor-pointer">
-                    <div className="bg-white/90 backdrop-blur-xl shadow-ethereal px-5 py-3 rounded-2xl rounded-br-none mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 border border-white/60 pointer-events-none">
-                        <p className="text-sm font-bold text-primary-900 mb-0.5">Trợ lý AI Ethereal</p>
-                        <p className="text-xs text-on-surface/70">Tôi có thể giúp bạn lên lịch trình?</p>
+                <div className="fixed inset-0 z-[100] bg-surface-bg flex flex-col animate-in fade-in duration-300">
+                    <div ref={mapContainerRef} className="absolute inset-0 z-0"></div>
+
+                    {/* Top UI Overlay */}
+                    <div className="absolute top-0 left-0 right-0 p-4 md:p-6 z-10 flex flex-col md:flex-row gap-3 pointer-events-none items-start">
+                        <button 
+                            onClick={onClose}
+                            className="w-12 h-12 bg-white/90 backdrop-blur-xl rounded-full shadow-ethereal flex items-center justify-center text-primary-900 border border-white/60 hover:bg-surface-low transition-colors pointer-events-auto shrink-0"
+                        >
+                            <IconArrowLeft />
+                        </button>
+                        
+                        <div className="w-full max-w-2xl flex flex-col gap-3 pointer-events-auto">
+                            <div className="bg-white/90 backdrop-blur-xl h-12 rounded-full shadow-ethereal flex items-center px-4 border border-white/60">
+                                <IconSearch className="text-on-surface/50 w-5 h-5 mr-2" />
+                                <input type="text" placeholder="Tìm kiếm địa điểm, sự kiện..." className="bg-transparent border-none outline-none w-full text-sm font-semibold text-primary-900" />
+                            </div>
+                            
+                            {/* Layer Filter Bar */}
+                            <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                                {Object.entries(categoryMeta).map(([key, meta]) => (
+                                    <button 
+                                        key={key}
+                                        onClick={() => setActiveCategory(key)}
+                                        className={`px-4 py-2.5 rounded-full shadow-sm text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${
+                                            activeCategory === key 
+                                            ? 'bg-primary-900 text-white border-primary-900 shadow-md transform scale-105' 
+                                            : 'bg-white/90 backdrop-blur-xl text-primary-900 border-white/60 hover:bg-surface-low'
+                                        }`}
+                                    >
+                                        <meta.icon className={`w-3.5 h-3.5 ${activeCategory === key ? 'text-white' : (key === 'live' ? 'text-tertiary-accent' : 'text-primary-900')}`} />
+                                        {meta.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Information Popup (Bottom Sheet) */}
+                    {selectedLocation && (
+                        <div className="absolute bottom-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:w-[420px] z-20 pointer-events-auto">
+                            <div className="bg-white/95 backdrop-blur-2xl rounded-[1.5rem] shadow-dropdown border border-white/40 overflow-hidden animate-slide-up">
+                                <button 
+                                    onClick={() => setSelectedLocation(null)}
+                                    className="absolute top-4 right-4 w-8 h-8 bg-black/5 rounded-full flex items-center justify-center text-primary-900 z-10 hover:bg-black/10 transition-colors"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                                </button>
+
+                                {selectedLocation.category === 'live' ? (
+                                    <div>
+                                        <div className="h-44 relative">
+                                            <img src={selectedLocation.img} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 to-transparent"></div>
+                                            <div className="absolute bottom-4 left-4 bg-tertiary-accent text-primary-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">LIVE EVENT</div>
+                                        </div>
+                                        <div className="p-6">
+                                            <h3 className="text-xl font-bold text-primary-900 mb-1">{selectedLocation.title}</h3>
+                                            <p className="text-sm text-on-surface/60 mb-4">{selectedLocation.location}</p>
+                                            <div className="grid grid-cols-2 gap-3 mb-5">
+                                                <div className="bg-surface-low p-3 rounded-xl">
+                                                    <p className="text-[10px] uppercase font-bold text-on-surface/40 mb-1">Bắt đầu</p>
+                                                    <p className="font-bold text-primary-900">{selectedLocation.startTime}</p>
+                                                </div>
+                                                <div className="bg-surface-low p-3 rounded-xl">
+                                                    <p className="text-[10px] uppercase font-bold text-on-surface/40 mb-1">Giá từ</p>
+                                                    <p className="font-bold text-secondary-500">{selectedLocation.price}</p>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={() => handleActionClick("Đặt chỗ & Chỉ đường", selectedLocation)}
+                                                className="w-full bg-primary-900 text-white font-bold py-3.5 rounded-xl hover:bg-secondary-500 transition-colors active:scale-95 transform"
+                                            >
+                                                Đặt chỗ & Chỉ đường
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-6">
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div>
+                                                <span className="text-[10px] uppercase font-bold text-on-surface/40 tracking-widest mb-1 block">
+                                                    {categoryMeta[selectedLocation.category].label}
+                                                </span>
+                                                <h3 className="text-xl font-bold text-primary-900 leading-tight">{selectedLocation.title}</h3>
+                                            </div>
+                                            {selectedLocation.rating && (
+                                                <div className="bg-primary-900 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-sm font-bold">
+                                                    {selectedLocation.rating} <IconStar className="w-3.5 h-3.5" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {selectedLocation.category === 'medical' && (
+                                            <div className="mb-6 flex items-center gap-3 text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">
+                                                <IconMedical className="w-5 h-5 shrink-0" />
+                                                <span className="text-sm font-bold">Hotline: {selectedLocation.phone}</span>
+                                            </div>
+                                        )}
+
+                                        {selectedLocation.price && (
+                                            <div className="mb-5 flex items-center justify-between">
+                                                <span className="text-sm text-on-surface/60">Giá phòng từ:</span>
+                                                <span className="text-lg font-bold text-primary-900">{selectedLocation.price}</span>
+                                            </div>
+                                        )}
+
+                                        <button 
+                                            onClick={() => handleActionClick(selectedLocation.category === 'medical' ? "Gọi cấp cứu" : "Xem thông tin chi tiết", selectedLocation)}
+                                            className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-sm active:scale-95 transform ${
+                                                selectedLocation.category === 'medical' 
+                                                ? 'bg-red-600 text-white hover:bg-red-700' 
+                                                : 'bg-secondary-500 text-white hover:bg-primary-900'
+                                            }`}
+                                        >
+                                            {selectedLocation.category === 'medical' ? 'Gọi cấp cứu ngay' : 'Xem thông tin chi tiết'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const MapSection = ({ onOpenFullMap }) => {
+            const previewMapRef = React.useRef(null);
+            const mapInstRef = React.useRef(null);
+
+            React.useEffect(() => {
+                if (!mapInstRef.current && previewMapRef.current) {
+                    mapInstRef.current = L.map(previewMapRef.current, {
+                        zoomControl: false,
+                        dragging: false,
+                        touchZoom: false,
+                        doubleClickZoom: false,
+                        scrollWheelZoom: false,
+                        boxZoom: false,
+                        keyboard: false,
+                        attributionControl: false
+                    }).setView([10.2289, 103.9572], 10);
+
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mapInstRef.current);
+                    
+                    const fakeStarHtml = `
+                        <div class="relative flex items-center justify-center">
+                            <div class="absolute w-10 h-10 bg-[#ffb870]/40 rounded-full animate-ping"></div>
+                            <div class="w-5 h-5 bg-[#ffb870] rounded-full shadow-sm border-[2px] border-white"></div>
+                        </div>
+                    `;
+                    L.marker([10.2289, 103.9572], { 
+                        icon: L.divIcon({ className: '', html: fakeStarHtml, iconSize: [20,20], iconAnchor: [10,10] })
+                    }).addTo(mapInstRef.current);
+                }
+                
+                return () => {
+                    if (mapInstRef.current) {
+                        mapInstRef.current.remove();
+                        mapInstRef.current = null;
+                    }
+                }
+            }, []);
+
+            return (
+                <section className="py-12">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-6">
+                        <div>
+                            <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-2 flex items-center space-x-2">
+                                <IconMap className="w-6 h-6"/> <span>Khám phá bản đồ Phú Quốc</span>
+                            </h2>
+                            <p className="text-on-surface/70 text-[1rem]">Bản đồ tương tác thông minh - Tích hợp sự kiện Real-time</p>
+                        </div>
                     </div>
                     
-                    <button className="relative w-14 h-14 md:w-16 md:h-16 bg-primary-900 rounded-full flex items-center justify-center text-tertiary-accent shadow-ethereal hover:scale-105 hover:-translate-y-1 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(0,22,41,0.2)] border border-white/10 overflow-hidden">
-                        <div className="absolute inset-0 bg-tertiary-accent/20 blur-xl animate-pulse"></div>
-                        <IconSparkles />
-                    </button>
-                </div>
+                    <div className="relative w-full h-[450px] bg-surface-highest rounded-[2rem] overflow-hidden shadow-ethereal border border-surface-highest/50">
+                        {/* Leaflet Map Preview (Khóa tương tác) */}
+                        <div ref={previewMapRef} className="absolute inset-0 z-0 pointer-events-none opacity-80"></div>
+                        <div className="absolute inset-0 bg-primary-900/5 z-0 pointer-events-none"></div>
+
+                        {/* Thẻ bên trong map preview */}
+                        <div className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-auto md:w-80 bg-white/90 backdrop-blur-xl p-6 rounded-[1.5rem] shadow-ethereal border border-white/60 z-30">
+                            <h3 className="font-bold text-primary-900 text-lg mb-5 flex items-center justify-between">
+                                Các khu vực phổ biến
+                                <div className="w-8 h-8 rounded-full bg-surface-lowest flex items-center justify-center text-secondary-500 shadow-sm">
+                                    <IconMap className="w-4 h-4"/>
+                                </div>
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between group cursor-pointer border-b border-surface-highest/40 pb-3">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 rounded-full bg-surface-low flex items-center justify-center group-hover:bg-secondary-500 group-hover:text-white transition-colors text-secondary-500">
+                                            <IconBed className="w-4 h-4"/>
+                                        </div>
+                                        <span className="font-semibold text-primary-900 text-sm group-hover:text-secondary-500 transition-colors">Dương Đông</span>
+                                    </div>
+                                    <span className="text-xs font-medium text-on-surface/50 bg-surface-low px-2 py-1 rounded-md">342 chỗ nghỉ</span>
+                                </div>
+                                <div className="flex items-center justify-between group cursor-pointer border-b border-surface-highest/40 pb-3">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-8 h-8 rounded-full bg-surface-low flex items-center justify-center group-hover:bg-secondary-500 group-hover:text-white transition-colors text-secondary-500">
+                                            <IconBed className="w-4 h-4"/>
+                                        </div>
+                                        <span className="font-semibold text-primary-900 text-sm group-hover:text-secondary-500 transition-colors">Bãi Trường</span>
+                                    </div>
+                                    <span className="text-xs font-medium text-on-surface/50 bg-surface-low px-2 py-1 rounded-md">128 chỗ nghỉ</span>
+                                </div>
+                            </div>
+                            <button onClick={onOpenFullMap} className="mt-6 w-full bg-primary-900 text-white font-bold py-3 rounded-xl hover:bg-secondary-500 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
+                                Mở bản đồ lớn <IconSearch className="w-4 h-4"/>
+                            </button>
+                        </div>
+                    </div>
+                </section>
             );
         };
+
+        // --- KHÔI PHỤC TOÀN BỘ CÁC COMPONENT GỐC ---
+
+        const NavPill = ({ icon, text, active, onClick }) => (
+            <button 
+                onClick={onClick}
+                className={`
+                flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all
+                ${active 
+                    ? 'border border-white/20 bg-white/10 backdrop-blur-md text-white font-semibold' 
+                    : 'text-white/80 hover:bg-white/5 hover:text-white font-medium'
+                }
+            `}>
+                {icon}
+                <span>{text}</span>
+            </button>
+        );
 
         const HeaderAndHero = () => {
             return (
@@ -163,7 +532,7 @@
                         <div className="text-2xl font-bold tracking-tight">PQGO.com</div>
                         
                         <div className="hidden lg:flex items-center space-x-6 font-medium text-sm">
-                        <button className="flex items-center space-x-1 hover:text-tertiary-accent transition-colors"><IconGlobe /><span>VN</span></button>
+                        <button className="flex items-center space-x-1 hover:text-tertiary-accent transition-colors"><IconGlobe className="w-5 h-5"/><span>VN</span></button>
                         <div className="flex space-x-3 ml-2">
                             <button className="bg-surface-lowest text-secondary-500 px-5 py-2 rounded-full font-semibold hover:bg-surface-low transition-colors">Đăng ký</button>
                             <button className="bg-surface-lowest text-secondary-500 px-5 py-2 rounded-full font-semibold hover:bg-surface-low transition-colors">Đăng nhập</button>
@@ -172,12 +541,12 @@
                 </div>
 
                 <div className="px-6 md:px-12 xl:px-24 pt-4 pb-8 flex space-x-2 overflow-x-auto hide-scrollbar">
-                    <NavPill icon={<IconBed />} text="Lưu trú" active />
-                    <NavPill icon={<IconPlane />} text="Chuyến bay" />
-                    <NavPill icon={<IconStore />} text="Cửa hàng" />
-                    <NavPill icon={<IconMedical />} text="Y tế" />
-                    <NavPill icon={<IconHelp />} text="Hỗ trợ" />
-                    <NavPill icon={<IconTaxi />} text="Taxi sân bay" />
+                    <NavPill icon={<IconBed className="w-5 h-5"/>} text="Lưu trú" active onClick={() => {}} />
+                    <NavPill icon={<IconPlane className="w-5 h-5"/>} text="Chuyến bay" />
+                    <NavPill icon={<IconStore className="w-5 h-5"/>} text="Cửa hàng" />
+                    <NavPill icon={<IconMedical className="w-5 h-5"/>} text="Y tế" />
+                    <NavPill icon={<IconHelp className="w-5 h-5"/>} text="Hỗ trợ" />
+                    <NavPill icon={<IconTaxi className="w-5 h-5"/>} text="Taxi sân bay" />
                 </div>
 
                 <div className="px-6 md:px-12 xl:px-24 pt-8 pb-12">
@@ -192,21 +561,14 @@
             );
         };
 
-        const NavPill = ({ icon, text, active }) => (
-            <button className={`
-                flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all
-                ${active 
-                    ? 'border border-white/20 bg-white/10 backdrop-blur-md text-white font-semibold' 
-                    : 'text-white/80 hover:bg-white/5 hover:text-white font-medium'
-                }
-            `}>
-                {icon}
-                <span>{text}</span>
-            </button>
-        );
-
         const SearchModule = () => {
-            const [showSuggestions, setShowSuggestions] = React.useState(false);
+            const [activeDropdown, setActiveDropdown] = React.useState(null);
+            const [guests, setGuests] = React.useState({ adults: 2, children: 0, rooms: 1 });
+            const [selectedDates, setSelectedDates] = React.useState({ checkin: null, checkout: null });
+
+            const toggleDropdown = (name) => {
+                setActiveDropdown(activeDropdown === name ? null : name);
+            };
 
             const suggestedHotels = [
                 { name: "JW Marriott Hotel Hanoi", location: "Nam Từ Liêm, Hà Nội" },
@@ -215,81 +577,226 @@
                 { name: "InterContinental Danang Sun Peninsula", location: "Sơn Trà, Đà Nẵng" }
             ];
 
-            return (
-                <div className="relative">
-                    <div className="bg-white/80 backdrop-blur-xl shadow-ethereal rounded-md p-2 flex flex-col md:flex-row gap-2 border border-white/40">
-                        <div 
-                            className="flex-[1.5] flex items-center bg-surface-low rounded-[1rem] px-4 py-4 md:py-0 h-14 md:h-auto group hover:bg-surface-highest transition-colors cursor-text relative"
-                            onClick={() => setShowSuggestions(!showSuggestions)}
-                        >
-                            <IconBed className="text-on-surface/50 mr-3 shrink-0" />
-                            <input 
-                                type="text" 
-                                placeholder="Bạn muốn ở đâu?" 
-                                readOnly
-                                className="bg-transparent border-none outline-none w-full text-on-surface font-medium placeholder:text-on-surface/60 cursor-pointer"
-                            />
-                        </div>
+            const handleGuestChange = (type, delta) => {
+                setGuests(prev => ({
+                    ...prev,
+                    [type]: Math.max(type === 'rooms' || type === 'adults' ? 1 : 0, prev[type] + delta)
+                }));
+            };
 
-                        <div className="flex-1 flex items-center bg-surface-low rounded-[1rem] px-4 py-4 md:py-0 h-14 md:h-auto group hover:bg-surface-highest transition-colors cursor-pointer">
-                            <IconCalendar className="text-on-surface/50 mr-3 shrink-0" />
-                            <div className="flex-1 text-on-surface font-medium opacity-60 text-sm md:text-base">Ngày nhận phòng</div>
+            const Calendar = ({ type }) => {
+                const days = Array.from({ length: 30 }, (_, i) => i + 1);
+                const weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                
+                return (
+                    <div className="p-4 w-full md:w-[320px] bg-white/95 backdrop-blur-2xl shadow-dropdown border border-white/40 rounded-md animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center justify-between mb-4 px-2">
+                            <h4 className="font-bold text-primary-900">Tháng 4 2026</h4>
+                            <div className="flex space-x-2">
+                                <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-low text-on-surface/50 transition-colors">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                                </button>
+                                <button className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-low text-on-surface/50 transition-colors">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                                </button>
+                            </div>
                         </div>
-
-                        <div className="flex-1 flex items-center bg-surface-low rounded-[1rem] px-4 py-4 md:py-0 h-14 md:h-auto group hover:bg-surface-highest transition-colors cursor-pointer">
-                            <IconCalendar className="text-on-surface/50 mr-3 shrink-0" />
-                            <div className="flex-1 text-on-surface font-medium opacity-60 text-sm md:text-base">Ngày trả phòng</div>
+                        <div className="grid grid-cols-7 gap-1 mb-2">
+                            {weekDays.map(d => (
+                                <div key={d} className="text-[10px] font-bold text-on-surface/40 text-center uppercase tracking-widest">{d}</div>
+                            ))}
                         </div>
-
-                        <div className="flex-1 flex items-center bg-surface-low rounded-[1rem] px-4 py-4 md:py-0 h-14 md:h-auto group hover:bg-surface-highest transition-colors cursor-pointer">
-                            <IconUser className="text-on-surface/50 mr-3 shrink-0" />
-                            <div className="flex-1 text-on-surface font-medium text-sm md:text-base truncate">2 người lớn · 0 trẻ em · 1 phòng</div>
+                        <div className="grid grid-cols-7 gap-1">
+                            {[null, null, null].map((_, i) => <div key={`empty-${i}`} />)}
+                            {days.map(day => {
+                                const isSelected = (type === 'checkin' && day === 18) || (type === 'checkout' && day === 22);
+                                return (
+                                    <button 
+                                        key={day}
+                                        onClick={() => {
+                                            setSelectedDates(prev => ({ ...prev, [type]: `2026-04-${day}` }));
+                                            setActiveDropdown(type === 'checkin' ? 'checkout' : null);
+                                        }}
+                                        className={`
+                                            h-10 w-full flex items-center justify-center rounded-lg text-sm font-medium transition-all
+                                            ${isSelected 
+                                                ? 'bg-secondary-500 text-white shadow-md' 
+                                                : 'hover:bg-surface-low text-primary-900 hover:text-secondary-500'
+                                            }
+                                        `}
+                                    >
+                                        {day}
+                                    </button>
+                                );
+                            })}
                         </div>
-
-                        <button className="bg-secondary-500 hover:bg-primary-900 text-white font-semibold text-lg px-8 py-4 rounded-xl transition-all shadow-md shrink-0">
-                            Tìm
-                        </button>
+                        <div className="mt-4 pt-4 border-t border-surface-low flex justify-end">
+                            <button onClick={() => setActiveDropdown(null)} className="text-xs font-bold text-secondary-500 hover:text-primary-900 transition-colors">Xong</button>
+                        </div>
                     </div>
+                );
+            };
 
-                    {showSuggestions && (
-                        <div className="absolute top-full left-0 mt-3 w-full md:w-[450px] bg-white/95 backdrop-blur-2xl shadow-ethereal rounded-md border border-white/40 p-4 z-50">
-                            <button 
-                                className="w-full text-left p-4 rounded-xl hover:bg-surface-low flex items-center space-x-4 group transition-all mb-4 border border-secondary-500/10 shadow-sm"
-                                onClick={() => setShowSuggestions(false)}
+            const GuestsSelector = () => (
+                <div className="p-6 w-72 bg-white/95 backdrop-blur-2xl shadow-dropdown border border-white/40 rounded-md animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="space-y-6">
+                        {[
+                            { label: 'Người lớn', sub: 'Trên 13 tuổi', key: 'adults' },
+                            { label: 'Trẻ em', sub: '0 - 12 tuổi', key: 'children' },
+                            { label: 'Phòng', sub: '', key: 'rooms' }
+                        ].map((item) => (
+                            <div key={item.key} className="flex items-center justify-between">
+                                <div>
+                                    <p className="font-bold text-primary-900 text-sm">{item.label}</p>
+                                    {item.sub && <p className="text-[11px] text-on-surface/40 leading-none mt-1">{item.sub}</p>}
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <button 
+                                        onClick={() => handleGuestChange(item.key, -1)}
+                                        className="w-10 h-10 rounded-full border border-surface-highest flex items-center justify-center text-on-surface/60 hover:border-secondary-500 hover:text-secondary-500 hover:bg-surface-low transition-all disabled:opacity-30 disabled:pointer-events-none"
+                                        disabled={guests[item.key] <= (item.key === 'rooms' || item.key === 'adults' ? 1 : 0)}
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    </button>
+                                    <span className="w-4 text-center font-bold text-primary-900">{guests[item.key]}</span>
+                                    <button 
+                                        onClick={() => handleGuestChange(item.key, 1)}
+                                        className="w-10 h-10 rounded-full border border-surface-highest flex items-center justify-center text-on-surface/60 hover:border-secondary-500 hover:text-secondary-500 hover:bg-surface-low transition-all"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button 
+                        onClick={() => setActiveDropdown(null)}
+                        className="mt-8 w-full bg-primary-900 text-white font-bold py-3 rounded-xl hover:bg-secondary-500 transition-colors shadow-md text-sm"
+                    >
+                        Xong
+                    </button>
+                </div>
+            );
+
+            return (
+                <div className="relative z-20">
+                    <div className="bg-white/80 backdrop-blur-xl shadow-ethereal rounded-md p-2 flex flex-col md:flex-row gap-2 border border-white/40">
+                        <div className="flex-[1.5] relative">
+                            <div 
+                                className={`flex items-center bg-surface-low rounded-[1rem] px-4 h-14 md:h-16 group hover:bg-surface-highest transition-colors cursor-text border-2 ${activeDropdown === 'location' ? 'border-secondary-500/30 bg-surface-highest' : 'border-transparent'}`}
+                                onClick={() => toggleDropdown('location')}
                             >
-                                <div className="w-12 h-12 rounded-full bg-secondary-500/10 flex items-center justify-center text-secondary-500 group-hover:bg-secondary-500 group-hover:text-white transition-all">
-                                    <IconSearch />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="font-bold text-primary-900 text-lg group-hover:text-secondary-500 transition-colors leading-tight">Tôi chưa biết để xem danh sách đã</p>
-                                    <p className="text-xs text-on-surface/50 mt-1">Khám phá các điểm đến được yêu thích nhất lúc này</p>
-                                </div>
-                            </button>
-
-                            <div className="px-2 py-1">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-on-surface/40 mb-3 ml-2">Gợi ý dành riêng cho bạn</h4>
-                                <div className="space-y-1">
-                                    {suggestedHotels.map((hotel, idx) => (
-                                        <button 
-                                            key={idx}
-                                            className="w-full text-left px-3 py-3 rounded-lg hover:bg-surface-low flex items-center space-x-3 transition-colors group"
-                                            onClick={() => setShowSuggestions(false)}
-                                        >
-                                            <IconBed className="text-on-surface/30 group-hover:text-secondary-500 transition-colors" />
-                                            <div>
-                                                <p className="font-semibold text-primary-900 text-sm group-hover:text-secondary-500 transition-colors">{hotel.name}</p>
-                                                <p className="text-[11px] text-on-surface/40">{hotel.location}</p>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
+                                <IconBed className={`mr-3 shrink-0 transition-colors w-5 h-5 ${activeDropdown === 'location' ? 'text-secondary-500' : 'text-on-surface/50'}`} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Bạn muốn ở đâu?" 
+                                    readOnly
+                                    className="bg-transparent border-none outline-none w-full text-on-surface text-sm md:text-base font-semibold placeholder:text-on-surface/40 cursor-pointer"
+                                />
                             </div>
                             
-                            <div className="mt-4 pt-3 border-t border-surface-low text-center">
-                                <button className="text-xs font-bold text-secondary-500 hover:text-primary-900 transition-colors">Xem tất cả địa điểm phổ biến</button>
-                            </div>
+                            {activeDropdown === 'location' && (
+                                <div className="absolute top-full left-0 mt-3 w-full md:w-[450px] bg-white/95 backdrop-blur-2xl shadow-dropdown rounded-md border border-white/40 p-4 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <button 
+                                        className="w-full text-left p-4 rounded-xl hover:bg-surface-low flex items-center space-x-4 group transition-all mb-4 border border-secondary-500/10 shadow-sm"
+                                        onClick={() => setActiveDropdown(null)}
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-secondary-500/10 flex items-center justify-center text-secondary-500 group-hover:bg-secondary-500 group-hover:text-white transition-all">
+                                            <IconSearch className="w-5 h-5"/>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-primary-900 text-lg group-hover:text-secondary-500 transition-colors leading-tight">Tôi chưa biết nơi cụ thể</p>
+                                            <p className="text-xs text-on-surface/50 mt-1">Khám phá các điểm đến được yêu thích nhất</p>
+                                        </div>
+                                    </button>
+
+                                    <div className="px-2 py-1">
+                                        <h4 className="text-[10px] font-bold uppercase tracking-widest text-on-surface/40 mb-3 ml-2">Gợi ý dành riêng cho bạn</h4>
+                                        <div className="space-y-1">
+                                            {suggestedHotels.map((hotel, idx) => (
+                                                <button 
+                                                    key={idx}
+                                                    className="w-full text-left px-3 py-3 rounded-lg hover:bg-surface-low flex items-center space-x-3 transition-colors group"
+                                                    onClick={() => setActiveDropdown(null)}
+                                                >
+                                                    <IconBed className="text-on-surface/30 group-hover:text-secondary-500 transition-colors w-5 h-5" />
+                                                    <div>
+                                                        <p className="font-semibold text-primary-900 text-sm group-hover:text-secondary-500 transition-colors">{hotel.name}</p>
+                                                        <p className="text-[11px] text-on-surface/40">{hotel.location}</p>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    )}
+
+                        <div className="flex-1 relative">
+                            <div 
+                                className={`flex items-center bg-surface-low rounded-[1rem] px-4 h-14 md:h-16 group hover:bg-surface-highest transition-colors cursor-pointer border-2 ${activeDropdown === 'checkin' ? 'border-secondary-500/30 bg-surface-highest' : 'border-transparent'}`}
+                                onClick={() => toggleDropdown('checkin')}
+                            >
+                                <IconCalendar className={`mr-3 shrink-0 transition-colors w-5 h-5 ${activeDropdown === 'checkin' ? 'text-secondary-500' : 'text-on-surface/50'}`} />
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface/40 leading-none mb-1">Nhận phòng</p>
+                                    <div className="text-on-surface font-bold text-sm md:text-base leading-tight">
+                                        {selectedDates.checkin ? '18 Thg 04, 2026' : 'Chọn ngày'}
+                                    </div>
+                                </div>
+                            </div>
+                            {activeDropdown === 'checkin' && (
+                                <div className="absolute top-full left-0 mt-3 z-50">
+                                    <Calendar type="checkin" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex-1 relative">
+                            <div 
+                                className={`flex items-center bg-surface-low rounded-[1rem] px-4 h-14 md:h-16 group hover:bg-surface-highest transition-colors cursor-pointer border-2 ${activeDropdown === 'checkout' ? 'border-secondary-500/30 bg-surface-highest' : 'border-transparent'}`}
+                                onClick={() => toggleDropdown('checkout')}
+                            >
+                                <IconCalendar className={`mr-3 shrink-0 transition-colors w-5 h-5 ${activeDropdown === 'checkout' ? 'text-secondary-500' : 'text-on-surface/50'}`} />
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface/40 leading-none mb-1">Trả phòng</p>
+                                    <div className="text-on-surface font-bold text-sm md:text-base leading-tight">
+                                        {selectedDates.checkout ? '22 Thg 04, 2026' : 'Chọn ngày'}
+                                    </div>
+                                </div>
+                            </div>
+                            {activeDropdown === 'checkout' && (
+                                <div className="absolute top-full right-0 md:left-0 mt-3 z-50">
+                                    <Calendar type="checkout" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex-1 relative">
+                            <div 
+                                className={`flex items-center bg-surface-low rounded-[1rem] px-4 h-14 md:h-16 group hover:bg-surface-highest transition-colors cursor-pointer border-2 ${activeDropdown === 'guests' ? 'border-secondary-500/30 bg-surface-highest' : 'border-transparent'}`}
+                                onClick={() => toggleDropdown('guests')}
+                            >
+                                <IconUser className={`mr-3 shrink-0 transition-colors w-5 h-5 ${activeDropdown === 'guests' ? 'text-secondary-500' : 'text-on-surface/50'}`} />
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface/40 leading-none mb-1">Hành khách</p>
+                                    <div className="text-on-surface font-bold text-sm md:text-base leading-tight truncate">
+                                        {guests.adults} ng. lớn · {guests.rooms} phòng
+                                    </div>
+                                </div>
+                            </div>
+                            {activeDropdown === 'guests' && (
+                                <div className="absolute top-full right-0 mt-3 z-50">
+                                    <GuestsSelector />
+                                </div>
+                            )}
+                        </div>
+
+                        <button className="bg-secondary-500 hover:bg-primary-900 text-white font-bold text-lg px-10 h-14 md:h-16 rounded-xl transition-all shadow-md active:scale-95 group flex items-center justify-center space-x-2">
+                            <span>Tìm kiếm</span>
+                            <IconSearch className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
                 </div>
             );
         };
@@ -305,7 +812,7 @@
                             <span className="text-xs font-bold uppercase tracking-wider text-secondary-500 mb-2 block">Ưu đãi Mùa Du Lịch</span>
                             <h3 className="text-xl font-bold text-primary-900 mb-2">Không điều kiện ràng buộc. An tâm nghỉ dưỡng.</h3>
                             <p className="text-on-surface/70 mb-6 max-w-lg">Giảm ít nhất 15% cho một số chỗ nghỉ trên toàn thế giới – đặt ngay, vi vu liền tay.</p>
-                            <button className="bg-secondary-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-900 transition-colors text-sm">
+                            <button className="bg-secondary-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-900 transition-colors text-sm shadow-md">
                                 Tiết kiệm với Ưu Đãi Mùa Du Lịch
                             </button>
                         </div>
@@ -344,23 +851,26 @@
             );
         };
 
-        const MapSection = () => {
+        // --- MAP SECTION GỐC VỚI HÌNH HÒN ĐẢO CHẤM CSS ---
+        const MapSectionOriginal = ({ onOpenFullMap }) => {
             return (
                 <section className="py-12">
                     <div className="flex flex-col md:flex-row justify-between items-end mb-6">
                         <div>
                             <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-2 flex items-center space-x-2">
-                                <IconMap /> <span>Khám phá bản đồ Phú Quốc</span>
+                                <IconMap className="w-6 h-6"/> <span>Khám phá bản đồ Phú Quốc</span>
                             </h2>
-                            <p className="text-on-surface/70 text-[1rem]">Tìm chỗ nghỉ, nhà hàng và hoạt động theo từng khu vực trên đảo</p>
+                            <p className="text-on-surface/70 text-[1rem]">Bản đồ tương tác thông minh - Tích hợp sự kiện Real-time</p>
                         </div>
                     </div>
                     
                     <div className="relative w-full h-[450px] md:h-[550px] bg-[#8bd3ea] rounded-[2rem] overflow-hidden shadow-ethereal group border border-surface-highest/50">
+                        {/* Hòn đảo */}
                         <div className="absolute top-[5%] bottom-[5%] left-[20%] md:left-[35%] right-[20%] md:right-[35%] island-shape opacity-90 transition-transform duration-[20s] group-hover:scale-105">
                             <div className="absolute top-[10%] bottom-[10%] left-[10%] right-[10%] island-shape-inner"></div>
                         </div>
                         
+                        {/* Các chấm POI cứng như bản gốc */}
                         <div className="absolute top-[30%] right-[25%] md:right-[40%] transform -translate-x-1/2 -translate-y-1/2 flex items-center space-x-2 cursor-pointer hover:scale-110 transition-transform z-10">
                             <div className="w-4 h-4 bg-[#f19a33] rounded-full border-[2px] border-white shadow-sm flex items-center justify-center">
                                 <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -382,6 +892,7 @@
                             </div>
                         </div>
 
+                        {/* Điểm nhấn Mới (Sao Vàng) */}
                         <div className="absolute top-[50%] left-[35%] md:left-[45%] transform -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20">
                             <div className="flex items-center space-x-2">
                                 <div className="bg-[#fdf9e8] text-[#e87a00] px-2 py-0.5 rounded text-xs font-bold shadow-sm border border-[#f19a33]/20">Mới</div>
@@ -393,18 +904,19 @@
                             </div>
                         </div>
 
+                        {/* Thẻ bên trong map preview */}
                         <div className="absolute bottom-6 left-6 right-6 md:bottom-8 md:left-8 md:right-auto md:w-80 bg-white/90 backdrop-blur-xl p-6 rounded-[1.5rem] shadow-ethereal border border-white/60 z-30">
                             <h3 className="font-bold text-primary-900 text-lg mb-5 flex items-center justify-between">
                                 Các khu vực phổ biến
                                 <div className="w-8 h-8 rounded-full bg-surface-lowest flex items-center justify-center text-secondary-500 shadow-sm">
-                                    <IconMap />
+                                    <IconMap className="w-4 h-4"/>
                                 </div>
                             </h3>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between group cursor-pointer border-b border-surface-highest/40 pb-3">
                                     <div className="flex items-center space-x-3">
                                         <div className="w-8 h-8 rounded-full bg-surface-low flex items-center justify-center group-hover:bg-secondary-500 group-hover:text-white transition-colors text-secondary-500">
-                                            <IconBed />
+                                            <IconBed className="w-4 h-4"/>
                                         </div>
                                         <span className="font-semibold text-primary-900 text-sm group-hover:text-secondary-500 transition-colors">Dương Đông</span>
                                     </div>
@@ -413,14 +925,14 @@
                                 <div className="flex items-center justify-between group cursor-pointer border-b border-surface-highest/40 pb-3">
                                     <div className="flex items-center space-x-3">
                                         <div className="w-8 h-8 rounded-full bg-surface-low flex items-center justify-center group-hover:bg-secondary-500 group-hover:text-white transition-colors text-secondary-500">
-                                            <IconBed />
+                                            <IconBed className="w-4 h-4"/>
                                         </div>
                                         <span className="font-semibold text-primary-900 text-sm group-hover:text-secondary-500 transition-colors">Bãi Trường</span>
                                     </div>
                                     <span className="text-xs font-medium text-on-surface/50 bg-surface-low px-2 py-1 rounded-md">128 chỗ nghỉ</span>
                                 </div>
                             </div>
-                            <button className="mt-6 w-full bg-primary-900 text-white font-bold py-3 rounded-xl hover:bg-secondary-500 transition-colors text-sm shadow-md">
+                            <button onClick={onOpenFullMap} className="mt-6 w-full bg-primary-900 text-white font-bold py-3 rounded-xl hover:bg-secondary-500 transition-colors text-sm shadow-md">
                                 Mở bản đồ lớn
                             </button>
                         </div>
@@ -440,7 +952,7 @@
             return (
                 <section className="py-8 border-t border-surface-highest/50">
                     <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-2 flex items-center space-x-2">
-                        <IconTicket /> <span>Tours & Vé Tham Quan</span>
+                        <IconTicket className="w-6 h-6"/> <span>Tours & Vé Tham Quan</span>
                     </h2>
                     <p className="text-on-surface/70 mb-6 text-[1rem]">Khám phá những trải nghiệm không thể bỏ lỡ tại điểm đến</p>
                     
@@ -480,7 +992,7 @@
                     <div className="flex items-end justify-between mb-6">
                         <div>
                             <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-2 flex items-center space-x-2">
-                                <IconUtensils /> <span>Danh Sách Nhà Hàng, Bar & Pub</span>
+                                <IconUtensils className="w-6 h-6"/> <span>Danh Sách Nhà Hàng, Bar & Pub</span>
                             </h2>
                             <p className="text-on-surface/70 text-[1rem]">Các địa điểm ẩm thực & giải trí được đánh giá cao nhất</p>
                         </div>
@@ -492,7 +1004,7 @@
                             <div key={idx} className="flex-none w-[280px] md:w-[320px] bg-surface-lowest rounded-[1.5rem] overflow-hidden group cursor-pointer shadow-ethereal border border-surface-highest/30 flex flex-col">
                                 <div className="h-48 relative overflow-hidden">
                                     <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg text-primary-900 text-xs font-bold z-10 flex items-center shadow-sm">
-                                        <span className="text-[#f59e0b] mr-1"><IconStar /></span> {item.rating} <span className="font-normal text-on-surface/60 ml-1">({item.reviews})</span>
+                                        <span className="text-[#f59e0b] mr-1"><IconStar className="w-3 h-3"/></span> {item.rating} <span className="font-normal text-on-surface/60 ml-1">({item.reviews})</span>
                                     </div>
                                     <img src={item.img} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                 </div>
@@ -538,10 +1050,10 @@
 
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { title: 'SIM 4G & eSIM', desc: 'Kết nối tốc độ cao mọi nơi', icon: <IconWifi /> },
-                                { title: 'Cục phát Wifi', desc: 'Dùng chung tiết kiệm', icon: <IconGlobe /> },
-                                { title: 'Đưa đón sân bay', desc: 'Dịch vụ an toàn, đúng giờ', icon: <IconCar /> },
-                                { title: 'HOTLINE KHẨN CẤP', desc: 'Hỗ trợ y tế & sự cố 24/7', icon: <IconPhone />, isEmergency: true },
+                                { title: 'SIM 4G & eSIM', desc: 'Kết nối tốc độ cao mọi nơi', icon: <IconWifi className="w-6 h-6"/> },
+                                { title: 'Cục phát Wifi', desc: 'Dùng chung tiết kiệm', icon: <IconGlobe className="w-6 h-6"/> },
+                                { title: 'Đưa đón sân bay', desc: 'Dịch vụ an toàn, đúng giờ', icon: <IconCar className="w-6 h-6"/> },
+                                { title: 'HOTLINE KHẨN CẤP', desc: 'Hỗ trợ y tế & sự cố 24/7', icon: <IconPhone className="w-6 h-6"/>, isEmergency: true },
                             ].map((item, idx) => (
                                 <div key={idx} className="bg-surface-lowest rounded-[1rem] p-5 lg:p-6 shadow-ethereal border border-surface-highest/30 flex flex-col justify-center hover:-translate-y-1 transition-transform cursor-pointer group">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-colors ${item.isEmergency ? 'bg-red-50 text-red-500 group-hover:bg-red-500 group-hover:text-white' : 'bg-surface-low text-secondary-500 group-hover:bg-secondary-500 group-hover:text-white'}`}>
@@ -648,10 +1160,9 @@
             return (
                 <section className="py-8">
                     <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-6 flex items-center space-x-3">
-                        <IconCamera /> <span>Chùm ảnh phú quốc</span>
+                        <IconCamera className="w-6 h-6"/> <span>Chùm ảnh phú quốc</span>
                     </h2>
                     
-                    {/* Top Row: 2 Items (Asymmetric Editorial Style) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="relative h-64 md:h-[380px] rounded-md overflow-hidden group cursor-pointer shadow-ethereal">
                             <img src={albumPhotos[0].img} alt={albumPhotos[0].title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -672,7 +1183,6 @@
                         </div>
                     </div>
 
-                    {/* Bottom Row: 3 Items */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {albumPhotos.slice(2).map((photo, idx) => (
                             <div key={idx} className="relative h-64 md:h-[300px] rounded-md overflow-hidden group cursor-pointer shadow-ethereal">
@@ -691,7 +1201,7 @@
 
         const Footer = () => {
             return (
-                <footer className="bg-primary-900 text-white rounded-t-3xl pt-16 pb-8 mt-12 relative overflow-hidden">
+                <footer className="bg-primary-900 text-white rounded-t-[3rem] pt-16 pb-10 mt-6 relative overflow-hidden">
                     <div className="absolute top-[-50px] right-[-50px] w-64 h-64 bg-secondary-500/20 rounded-full blur-3xl pointer-events-none"></div>
                     
                     <div className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto relative z-10">
@@ -721,7 +1231,7 @@
                             <div>
                                 <h4 className="font-bold mb-4 text-tertiary-accent tracking-wide text-sm uppercase">Công ty</h4>
                                 <ul className="space-y-3 text-white/70 text-sm">
-                                    <li><a href="#" className="hover:text-white transition-colors">Về PQGO.com.com</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Về PQGO.com</a></li>
                                     <li><a href="#" className="hover:text-white transition-colors">Trợ giúp khách hàng</a></li>
                                     <li><a href="#" className="hover:text-white transition-colors">Khám phá các tài nguyên</a></li>
                                     <li><a href="#" className="hover:text-white transition-colors">Truyền thông</a></li>
@@ -740,13 +1250,21 @@
                         </div>
 
                         <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-white/50 border-t border-white/10">
-                            <p>Bản quyền © 1996–2026 PQGO.com.com™. Bảo lưu mọi quyền.</p>
+                            <p>Bản quyền © 1996–2026 PQGO.com™. Bảo lưu mọi quyền.</p>
                             <p className="mt-2 md:mt-0">Thiết kế theo triết lý "The Ethereal Navigator"</p>
                         </div>
                     </div>
                 </footer>
             );
         };
+
+        const FloatingAIAssistant = () => (
+            <div className="fixed bottom-6 right-6 z-50">
+                <button className="w-14 h-14 md:w-16 md:h-16 bg-primary-900 rounded-full flex items-center justify-center text-tertiary-accent shadow-dropdown border border-white/10 hover:scale-105 transition-transform">
+                    <IconSparkles className="w-6 h-6"/>
+                </button>
+            </div>
+        );
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);

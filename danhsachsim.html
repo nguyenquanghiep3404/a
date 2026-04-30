@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Sim 4G & eSIM | Booking.com - The Ethereal Navigator</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration based on Design System -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            900: '#001629',
+                            container: '#002b49'
+                        },
+                        secondary: {
+                            500: '#00658d'
+                        },
+                        tertiary: {
+                            accent: '#ffb870'
+                        },
+                        surface: {
+                            bg: '#f6fafe',
+                            low: '#f0f4f8',
+                            highest: '#dfe3e7',
+                            lowest: '#ffffff',
+                        },
+                        on: {
+                            surface: '#171c1f'
+                        }
+                    },
+                    boxShadow: {
+                        'ethereal': '0 12px 32px rgba(23, 28, 31, 0.06)',
+                        'dropdown': '0 20px 50px rgba(0, 22, 41, 0.15)',
+                    },
+                    borderRadius: {
+                        'DEFAULT': '1rem',
+                        'md': '1.5rem',
+                        'xl': '3rem',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <style>
+        body { background-color: #f6fafe; color: #171c1f; -webkit-font-smoothing: antialiased; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hero-gradient { background: linear-gradient(135deg, #001629 0%, #002b49 100%); }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.6); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- Icons ---
+        const IconBed = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>;
+        const IconPlane = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5.5 4L5 15.5 3 15l-1 1 3 3 1-1-.5-2 3.5-3.5 4 5.5h1.2l.6-1.1c.4-.2.7-.6.6-1.1Z"/></svg>;
+        const IconStore = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>;
+        const IconMedical = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10Z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
+        const IconHelp = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const IconTaxi = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/><rect width="4" height="4" x="10" y="3" rx="1"/></svg>;
+        const IconSignal = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 20V4"/></svg>;
+        const IconSearch = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+        const IconGlobe = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
+        const IconSparkles = (props) => <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+        const IconCheck = (props) => <svg {...props} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+        const IconSmartphone = (props) => <svg {...props} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>;
+
+        const App = () => {
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-hidden bg-surface-bg">
+                    <HeaderAndHero />
+                    
+                    <main className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto relative z-10 pb-24 flex-1">
+                        <SimListing />
+                    </main>
+
+                    <Footer />
+                    <FloatingAIAssistant />
+                </div>
+            );
+        };
+
+        const HeaderAndHero = () => (
+            <div className="hero-gradient text-white pb-24 rounded-b-[2.5rem] relative overflow-hidden">
+                <div className="px-6 md:px-12 xl:px-24 py-4 flex items-center justify-between relative z-10">
+                    <div className="text-2xl font-bold tracking-tight cursor-pointer" onClick={() => window.location.href='index.html'}>PQGO.com</div>
+                    <div className="hidden lg:flex items-center space-x-6">
+                        <button className="flex items-center space-x-1 hover:text-tertiary-accent transition-colors"><IconGlobe /><span>VN</span></button>
+                        <div className="flex space-x-3 ml-2">
+                            <button className="bg-surface-lowest text-primary-900 px-5 py-2 rounded-full font-bold hover:bg-tertiary-accent transition-all text-xs">Đăng ký</button>
+                            <button className="border border-white/30 text-white px-5 py-2 rounded-full font-bold hover:bg-white/10 transition-all text-xs">Đăng nhập</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="px-6 md:px-12 xl:px-24 pt-4 pb-8 flex space-x-2 overflow-x-auto hide-scrollbar relative z-10">
+                    <NavPill icon={<IconBed />} text="Lưu trú" onClick={() => window.location.href='index.html'} />
+                    <NavPill icon={<IconPlane />} text="Chuyến bay" />
+                    <NavPill icon={<IconStore />} text="Cửa hàng" active onClick={() => window.location.href='shop.html'} />
+                    <NavPill icon={<IconMedical />} text="Y tế" />
+                    <NavPill icon={<IconHelp />} text="Hỗ trợ" />
+                    <NavPill icon={<IconTaxi />} text="Taxi sân bay" onClick={() => window.location.href='taxisanbay.html'} />
+                </div>
+
+                <div className="px-6 md:px-12 xl:px-24 pt-8 pb-12 relative z-10 text-center">
+                    <h1 className="text-4xl md:text-[3.5rem] font-bold leading-[110%] tracking-tight mb-4">Sim 4G & eSIM Du Lịch</h1>
+                    <p className="text-xl md:text-[1.375rem] font-medium leading-[140%] text-white/80 max-w-2xl mx-auto">Kết nối tốc độ cao, phủ sóng mọi ngóc ngách hòn đảo.</p>
+                </div>
+            </div>
+        );
+
+        const NavPill = ({ icon, text, active, onClick }) => (
+            <button 
+                onClick={onClick}
+                className={`
+                flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all
+                ${active 
+                    ? 'border border-white/20 bg-white/10 backdrop-blur-md text-white font-semibold' 
+                    : 'text-white/80 hover:bg-white/5 hover:text-white font-medium'
+                }
+            `}>
+                {icon}
+                <span>{text}</span>
+            </button>
+        );
+
+        const SimListing = () => {
+            const plans = [
+                { id: 1, title: 'Du Lịch Phú Quốc 7 Ngày', data: '4GB / Ngày', price: '120.000đ', features: ['Tốc độ 4G/5G', 'Giao tận nơi 30p', 'Hỗ trợ 24/7'], type: 'Vật lý', popular: true },
+                { id: 2, title: 'Thỏa Thích 15 Ngày', data: '8GB / Ngày', price: '250.000đ', features: ['Tốc độ 4G/5G', 'Giao tận nơi 30p', 'Hỗ trợ 24/7'], type: 'Vật lý' },
+                { id: 3, title: 'Xuyên Việt 30 Ngày', data: 'Không Giới Hạn', price: '450.000đ', features: ['Tốc độ 4G/5G', 'Giao tận nơi 30p', 'Hỗ trợ 24/7'], type: 'Vật lý' },
+                { id: 4, title: 'eSIM Du Lịch 3 Ngày', data: '2GB / Ngày', price: '95.000đ', features: ['Kích hoạt 3 phút', 'Dùng ngay', 'Zalo/Hotline hỗ trợ'], type: 'eSIM', badge: 'Tiện lợi' },
+                { id: 5, title: 'eSIM Phú Quốc 7 Ngày', data: '4GB / Ngày', price: '150.000đ', features: ['Kích hoạt 3 phút', 'Dùng ngay', 'Zalo/Hotline hỗ trợ'], type: 'eSIM' },
+                { id: 6, title: 'eSIM Không Giới Hạn 15 Ngày', data: 'Unlimited', price: '320.000đ', features: ['Kích hoạt 3 phút', 'Dùng ngay', 'Zalo/Hotline hỗ trợ'], type: 'eSIM' },
+            ];
+
+            return (
+                <div className="space-y-12 -mt-10">
+                    <div className="bg-white/80 backdrop-blur-xl shadow-dropdown rounded-md p-6 grid grid-cols-1 md:grid-cols-3 gap-6 border border-white/60">
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 rounded-full bg-secondary-500/10 flex items-center justify-center text-secondary-500">
+                                <IconSmartphone />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-primary-900 leading-tight">Loại Sim</h4>
+                                <p className="text-xs text-on-surface/50 font-medium">Lựa chọn phù hợp thiết bị</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4 border-l-0 md:border-l border-surface-highest/40 md:pl-6">
+                            <div className="w-12 h-12 rounded-full bg-secondary-500/10 flex items-center justify-center text-secondary-500">
+                                <IconCheck />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-primary-900 leading-tight">Giao Nhanh</h4>
+                                <p className="text-xs text-on-surface/50 font-medium">Nội thành trong 30-60p</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-4 border-l-0 md:border-l border-surface-highest/40 md:pl-6">
+                            <div className="w-12 h-12 rounded-full bg-secondary-500/10 flex items-center justify-center text-secondary-500">
+                                <IconHelp />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-primary-900 leading-tight">Hỗ Trợ 24/7</h4>
+                                <p className="text-xs text-on-surface/50 font-medium">Zalo / WhatsApp 24/7</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {plans.map(p => (
+                            <div key={p.id} className={`bg-white rounded-[2.5rem] p-8 shadow-ethereal hover:shadow-dropdown transition-all duration-500 border border-surface-highest/20 relative flex flex-col ${p.popular ? 'border-secondary-500/40' : ''}`}>
+                                {p.popular && (
+                                    <div className="absolute top-0 right-10 -translate-y-1/2 bg-secondary-500 text-white px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">Phổ biến nhất</div>
+                                )}
+                                {p.badge && (
+                                    <div className="absolute top-0 right-10 -translate-y-1/2 bg-tertiary-accent text-primary-900 px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg">{p.badge}</div>
+                                )}
+                                <div className="mb-6">
+                                    <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-widest mb-4 ${p.type === 'eSIM' ? 'bg-secondary-500/10 text-secondary-500' : 'bg-primary-900/10 text-primary-900'}`}>{p.type}</span>
+                                    <h3 className="text-2xl font-bold text-primary-900 mb-2">{p.title}</h3>
+                                    <p className="text-secondary-500 font-bold text-lg">{p.data}</p>
+                                </div>
+                                <div className="space-y-3 mb-10 flex-1">
+                                    {p.features.map((f, i) => (
+                                        <div key={i} className="flex items-center space-x-3 text-sm font-semibold text-on-surface/70">
+                                            <IconCheck className="text-green-500 flex-shrink-0" />
+                                            <span>{f}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="pt-6 border-t border-surface-low flex items-center justify-between mt-auto">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-on-surface/30 uppercase tracking-widest mb-1">Giá gói</span>
+                                        <span className="text-2xl font-bold text-primary-900">{p.price}</span>
+                                    </div>
+                                    <button className="bg-primary-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-secondary-500 transition-all shadow-md">Đặc mua</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-primary-900 rounded-[3rem] p-10 text-white relative overflow-hidden">
+                        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-secondary-500/20 rounded-full blur-[100px]"></div>
+                        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+                            <div className="max-w-xl">
+                                <h3 className="text-3xl font-bold mb-4">Cách thức nhận thẻ Sim</h3>
+                                <div className="space-y-6">
+                                    <div className="flex items-start space-x-4">
+                                        <div className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center shrink-0 font-bold">1</div>
+                                        <p className="text-sm text-white/70">Chọn gói cước và cung cấp địa chỉ khách sạn hoặc điểm hẹn tại Phú Quốc.</p>
+                                    </div>
+                                    <div className="flex items-start space-x-4">
+                                        <div className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center shrink-0 font-bold">2</div>
+                                        <p className="text-sm text-white/70">Nhân viên của chúng tôi sẽ liên hệ Zalo/WhatsApp để xác nhận thời gian giao hàng (thường trong 30-60 phút).</p>
+                                    </div>
+                                    <div className="flex items-start space-x-4">
+                                        <div className="w-8 h-8 rounded-full border border-white/30 flex items-center justify-center shrink-0 font-bold">3</div>
+                                        <p className="text-sm text-white/70">Nhận Sim, kiểm tra kết nối tại chỗ và thanh toán. Đối với eSIM, mã QR sẽ gửi ngay qua tin nhắn.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-md w-full lg:w-96 text-center">
+                                <IconSparkles className="mx-auto mb-4 text-tertiary-accent w-10 h-10" />
+                                <h4 className="text-xl font-bold mb-2">Cần hỗ trợ ngay?</h4>
+                                <p className="text-sm text-white/60 mb-6">Liên hệ trực tiếp với tổng đài viên để được tư vấn gói cước phù hợp nhất.</p>
+                                <button className="w-full bg-tertiary-accent text-primary-900 py-4 rounded-xl font-bold hover:bg-white transition-all shadow-xl">Hotline: 1900 8888</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Footer = () => (
+            <footer className="bg-primary-900 text-white rounded-t-[3rem] pt-16 pb-10 mt-6 relative overflow-hidden">
+                <div className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto relative z-10">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+                        <div>
+                            <h4 className="font-bold text-tertiary-accent text-[10px] uppercase tracking-widest mb-6">Dịch vụ</h4>
+                            <ul className="space-y-3 text-white/50 text-sm font-semibold">
+                                <li className="hover:text-white cursor-pointer">Sim vật lý</li>
+                                <li className="hover:text-white cursor-pointer">eSIM kích hoạt ngay</li>
+                                <li className="hover:text-white cursor-pointer">Giao hàng miễn phí</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-tertiary-accent text-[10px] uppercase tracking-widest mb-6">Kết nối</h4>
+                            <ul className="space-y-3 text-white/50 text-sm font-semibold">
+                                <li className="hover:text-white cursor-pointer">Trung tâm hỗ trợ</li>
+                                <li className="hover:text-white cursor-pointer">Chính sách bảo hành</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-tertiary-accent text-[10px] uppercase tracking-widest mb-6">Hỗ trợ</h4>
+                            <ul className="space-y-3 text-white/50 text-sm font-semibold">
+                                <li className="hover:text-white cursor-pointer">Hotline: 1900 8888</li>
+                                <li className="hover:text-white cursor-pointer">Zalo: 090xxxxxxx</li>
+                            </ul>
+                        </div>
+                        <div className="flex flex-col">
+                            <div className="text-2xl font-bold tracking-tight mb-4 text-tertiary-accent">PQGO.com</div>
+                            <p className="text-xs text-white/20 font-bold uppercase tracking-[0.2em]">The Ethereal Navigator</p>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const FloatingAIAssistant = () => (
+            <div className="fixed bottom-10 right-10 z-[100] group cursor-pointer flex flex-col items-end">
+                <div className="bg-white/90 backdrop-blur-xl shadow-dropdown px-5 py-3 rounded-2xl rounded-br-none mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 border border-white/60 pointer-events-none text-right">
+                    <p className="text-sm font-bold text-primary-900 mb-0.5">Trợ lý AI</p>
+                    <p className="text-xs text-on-surface/70">Máy tôi có dùng được eSIM không?</p>
+                </div>
+                <button className="relative w-16 h-16 bg-primary-900 rounded-full flex items-center justify-center text-tertiary-accent shadow-dropdown border border-white/10 overflow-hidden hover:scale-105 transition-all">
+                    <div className="absolute inset-0 bg-tertiary-accent/20 blur-xl animate-pulse"></div>
+                    <IconSparkles />
+                </button>
+            </div>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

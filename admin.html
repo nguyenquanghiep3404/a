@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Quản lý Nội Dung Trang Chủ</title>
+    
+    <!-- Fonts: Inter (Body) & Outfit (Heading) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Config for specific fonts and colors mentioned in guidelines -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        // Using default tailwind colors that match guidelines
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Toast Animation */
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .toast-enter { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen antialiased">
+
+    <!-- Navbar Layout Giả định -->
+    <nav class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center text-white font-outfit font-bold">A</div>
+            <span class="font-outfit font-bold text-lg">AdminPortal</span>
+        </div>
+        <div class="flex items-center gap-4 text-sm font-medium text-slate-600">
+            <button class="hover:text-slate-900 transition-colors">Dashboard</button>
+            <button class="text-slate-900 transition-colors">Quản lý Trang chủ</button>
+            <div class="w-px h-4 bg-slate-200"></div>
+            <div class="w-8 h-8 rounded-full bg-slate-200"></div>
+        </div>
+    </nav>
+
+    <!-- Nội dung chính -->
+    <main class="max-w-6xl mx-auto px-8 py-10">
+        
+        <!-- Header Section -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+                <h1 class="font-outfit font-bold text-3xl text-slate-900 mb-1">Quản lý Khối Trang chủ</h1>
+                <p class="text-slate-500 text-sm">Cấu hình các trải nghiệm, nhà hàng và khách sạn hiển thị nổi bật.</p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="saveChanges()" class="flex items-center gap-2 px-5 py-2 bg-slate-900 text-white rounded-xl hover:bg-slate-800 transition-all font-medium text-sm shadow-sm">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Lưu tất cả
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex gap-8 border-b border-slate-200 mb-6" id="tabsContainer">
+            <button onclick="switchTab('tours')" id="tab-tours" class="pb-3 border-b-2 border-slate-900 font-bold text-slate-900 transition-all">Tours & Vé Tham Quan</button>
+            <button onclick="switchTab('restaurants')" id="tab-restaurants" class="pb-3 border-b-2 border-transparent text-slate-500 font-medium hover:text-slate-700 transition-all">Nhà Hàng, Bar & Pub</button>
+            <button onclick="switchTab('hotels')" id="tab-hotels" class="pb-3 border-b-2 border-transparent text-slate-500 font-medium hover:text-slate-700 transition-all">Lưu trú độc đáo</button>
+        </div>
+
+        <!-- Bảng điều khiển / Card Container -->
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            
+            <!-- Toolbar lọc & Đếm số lượng -->
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm">
+                    <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                    <input type="text" placeholder="Tìm kiếm..." class="outline-none bg-transparent w-48 text-slate-700 placeholder:text-slate-400">
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-slate-500">Đã chọn hiển thị:</span>
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-md text-sm font-bold text-slate-700">
+                        <span id="selectedCount" class="text-slate-900">0</span>
+                        <span class="text-slate-400">/</span>
+                        <span class="text-slate-400">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Data -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-100">
+                            <th class="w-16 py-4 px-6 text-center text-xs font-bold uppercase tracking-widest text-slate-500">Chọn</th>
+                            <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-slate-500">Thông tin địa điểm / Dịch vụ</th>
+                            <th id="col-dynamic" class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-slate-500">Mức giá / Đánh giá</th>
+                            <th class="py-4 px-6 text-xs font-bold uppercase tracking-widest text-slate-500">Trạng thái (Trang chủ)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-100">
+                        <!-- Data Rendered via JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Footer Bảng -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-end items-center text-xs text-slate-500">
+                <div class="flex gap-1">
+                    <button class="w-7 h-7 rounded flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50" disabled><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                    <button class="w-7 h-7 rounded flex items-center justify-center bg-slate-900 text-white font-medium">1</button>
+                    <button class="w-7 h-7 rounded flex items-center justify-center border border-slate-200 bg-white hover:bg-slate-50"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- CƠ SỞ DỮ LIỆU MOCK THEO TỪNG TAB ---
+        const appData = {
+            tours: [
+                { id: 't1', name: 'Tour các đảo vịnh Hạ Long', tag: 'Bán chạy', price: 'Từ VND 850.000', img: 'https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 't2', name: 'Vé cáp treo Sun World Fansipan', tag: 'Ưu đãi', price: 'Từ VND 800.000', img: 'https://images.unsplash.com/photo-1599382103442-99083cc320ea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 't3', name: 'Lặn ngắm san hô Phú Quốc', tag: 'Phổ biến', price: 'Từ VND 650.000', img: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 't4', name: 'Vé tham quan VinWonders', tag: 'Gia đình', price: 'Từ VND 950.000', img: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 't5', name: 'Show Ký Ức Hội An', tag: 'Văn hóa', price: 'Từ VND 600.000', img: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: false }
+            ],
+            restaurants: [
+                { id: 'r1', name: 'Sailing Club Signature', desc: 'Câu lạc bộ bãi biển & nhà hàng Á-Âu cao cấp', rating: '4.8', reviews: '1.2k', img: 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'r2', name: 'INK 360 Rooftop Bar', desc: 'Cocktail thủ công với tầm nhìn hoàng hôn tuyệt đẹp', rating: '4.9', reviews: '850', img: 'https://images.unsplash.com/photo-1572116469696-31de0f17cc34?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'r3', name: 'Nhà hàng Hải sản Làng Chài', desc: 'Hải sản tươi sống đánh bắt trong ngày', rating: '4.6', reviews: '2.4k', img: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'r4', name: 'The Deck Saigon', desc: 'Không gian ẩm thực ven sông lãng mạn tinh tế', rating: '4.7', reviews: '420', img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'r5', name: 'Basta Hiro - Pasta & Pizza', desc: 'Ẩm thực Ý mang phong cách Nhật Bản', rating: '4.5', reviews: '3.1k', img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: false }
+            ],
+            hotels: [
+                { id: 'h1', name: 'Mekong Lodge Resort', location: 'Cái Bè, Việt Nam', ratingScore: '8.7', ratingText: 'Tuyệt vời', reviews: '1.054', oldPrice: 'VND 1.600.000', price: 'VND 1.360.000', img: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'h2', name: 'Vedana Lagoon Resort & Spa', location: 'Huế, Việt Nam', ratingScore: '9', ratingText: 'Tuyệt hảo', reviews: '759', oldPrice: 'VND 3.383.148', price: 'VND 2.875.675', img: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'h3', name: 'The Chi Boutique Hotel', location: 'Hà Nội, Việt Nam', ratingScore: '9.1', ratingText: 'Tuyệt hảo', reviews: '514', oldPrice: 'VND 2.700.000', price: 'VND 1.665.000', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'h4', name: 'Catherine Cruises Ha Long', location: 'Hạ Long, Việt Nam', ratingScore: '9.8', ratingText: 'Tuyệt hảo', reviews: '480', oldPrice: 'VND 13.500.000', price: 'VND 12.420.000', img: 'https://images.unsplash.com/photo-1548695052-16782d49c693?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: true },
+                { id: 'h5', name: 'Hôtel des Arts Saigon', location: 'TP Hồ Chí Minh', ratingScore: '9.2', ratingText: 'Tuyệt hảo', reviews: '1.205', oldPrice: 'VND 4.500.000', price: 'VND 3.800.000', img: 'https://images.unsplash.com/photo-1551882547-ff40c0d589rx?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80', selected: false } // fake img fallback handles neatly
+            ]
+        };
+
+        let currentTab = 'tours';
+        const MAX_SELECTION = 5;
+
+        // --- ĐIỀU CHỈNH TAB ---
+        function switchTab(tabId) {
+            currentTab = tabId;
+            
+            // Cập nhật UI Tabs
+            ['tours', 'restaurants', 'hotels'].forEach(id => {
+                const btn = document.getElementById(`tab-${id}`);
+                if (id === tabId) {
+                    btn.classList.replace('border-transparent', 'border-slate-900');
+                    btn.classList.replace('text-slate-500', 'text-slate-900');
+                } else {
+                    btn.classList.replace('border-slate-900', 'border-transparent');
+                    btn.classList.replace('text-slate-900', 'text-slate-500');
+                }
+            });
+
+            // Đổi tên cột hiển thị Giá / Đánh giá
+            const colDynamic = document.getElementById('col-dynamic');
+            colDynamic.innerText = tabId === 'restaurants' ? 'Đánh giá' : 'Mức giá';
+
+            renderTable();
+        }
+
+        // --- RENDER BẢNG QUẢN TRỊ ---
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            const activeData = appData[currentTab];
+            let selectedCount = activeData.filter(t => t.selected).length;
+            document.getElementById('selectedCount').innerText = selectedCount;
+
+            // Xử lý màu sắc cho bộ đếm
+            const countWrapper = document.getElementById('selectedCount').parentElement;
+            if (selectedCount >= MAX_SELECTION) {
+                countWrapper.classList.replace('bg-slate-100', 'bg-emerald-50');
+                countWrapper.classList.replace('text-slate-700', 'text-emerald-700');
+            } else {
+                countWrapper.classList.replace('bg-emerald-50', 'bg-slate-100');
+                countWrapper.classList.replace('text-emerald-700', 'text-slate-700');
+            }
+
+            activeData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = `transition-colors hover:bg-slate-50/80 ${item.selected ? 'bg-emerald-50/30' : 'bg-white'}`;
+                
+                // Hiển thị tuỳ chọn Giá (với Tour/Hotel) hoặc Đánh giá (với Restaurant)
+                let priceOrRatingHtml = '';
+                if (currentTab === 'restaurants') {
+                    priceOrRatingHtml = `<div class="flex items-center gap-1 font-bold text-slate-700"><span class="text-amber-500">★</span> ${item.rating} <span class="text-slate-400 font-normal text-xs">(${item.reviews})</span></div>`;
+                } else if (currentTab === 'hotels') {
+                    priceOrRatingHtml = `<div class="text-slate-900 font-bold">${item.price}</div>`;
+                } else {
+                    priceOrRatingHtml = `<div class="text-slate-900 font-bold">${item.price}</div>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-4 px-6 text-center">
+                        <label class="relative flex items-center justify-center cursor-pointer">
+                            <input type="checkbox" class="peer sr-only" ${item.selected ? 'checked' : ''} onchange="handleToggle(event, '${item.id}')">
+                            <div class="w-5 h-5 rounded border border-slate-300 bg-white peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
+                                <i data-lucide="check" class="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100"></i>
+                            </div>
+                        </label>
+                    </td>
+                    <td class="py-4 px-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-100">
+                                <img src="${item.img}" class="w-full h-full object-cover">
+                            </div>
+                            <span class="font-medium text-slate-900 max-w-[250px] truncate" title="${item.name}">${item.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-6">
+                        ${priceOrRatingHtml}
+                    </td>
+                    <td class="py-4 px-6">
+                        ${item.selected 
+                            ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 rounded-md text-xs font-bold uppercase tracking-wide">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Hiển thị
+                               </span>` 
+                            : `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-md text-xs font-bold uppercase tracking-wide">
+                                Không hiện lên trang chủ
+                               </span>`
+                        }
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function handleToggle(e, id) {
+            const isChecking = e.target.checked;
+            const activeData = appData[currentTab];
+            const currentSelected = activeData.filter(t => t.selected).length;
+
+            if (isChecking && currentSelected >= MAX_SELECTION) {
+                e.target.checked = false;
+                showToast('Không thể chọn thêm', 'Chỉ được phép chọn tối đa 5 mục hiển thị trên trang chủ cho mỗi khối.', 'danger');
+                return;
+            }
+
+            const item = activeData.find(t => t.id === id);
+            if (item) item.selected = isChecking;
+            renderTable();
+        }
+
+        // --- HỆ THỐNG TOAST ---
+        function showToast(title, message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let colorClasses = type === 'success' ? 'bg-white border-emerald-500/30 text-slate-900 border-l-4 border-l-emerald-500' : 'bg-white border-rose-500/30 text-slate-900 border-l-4 border-l-rose-500';
+            let iconName = type === 'success' ? 'check-circle-2' : 'alert-circle';
+            let iconColor = type === 'success' ? 'text-emerald-500' : 'text-rose-500';
+
+            toast.className = `toast-enter flex items-start gap-3 p-4 rounded-xl shadow-xl border w-80 ${colorClasses}`;
+            toast.innerHTML = `
+                <i data-lucide="${iconName}" class="w-5 h-5 mt-0.5 ${iconColor}"></i>
+                <div class="flex-1">
+                    <h4 class="font-bold text-sm mb-1">${title}</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                if(toast.parentElement) {
+                    toast.style.animation = 'slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) reverse forwards';
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        function saveChanges() {
+            showToast('Lưu thành công', 'Cấu hình giao diện các khối trang chủ đã được cập nhật.', 'success');
+        }
+
+        // Khởi tạo
+        renderTable();
+
+    </script>
+</body>
+</html>

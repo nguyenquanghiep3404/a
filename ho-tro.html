@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trung tâm Hỗ trợ - PQGO.com | The Ethereal Navigator</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration based on DESIGN.md -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            900: '#001629',
+                            container: '#002b49'
+                        },
+                        secondary: {
+                            500: '#00658d'
+                        },
+                        tertiary: {
+                            accent: '#ffb870'
+                        },
+                        surface: {
+                            bg: '#f6fafe',
+                            low: '#f0f4f8',
+                            highest: '#dfe3e7',
+                            lowest: '#ffffff',
+                        },
+                        on: {
+                            surface: '#171c1f'
+                        }
+                    },
+                    boxShadow: {
+                        'ethereal': '0 12px 32px rgba(23, 28, 31, 0.06)',
+                        'ethereal-sm': '0 4px 12px rgba(23, 28, 31, 0.04)',
+                        'dropdown': '0 20px 50px rgba(0, 22, 41, 0.15)',
+                    },
+                    borderRadius: {
+                        'DEFAULT': '1rem', // 16px
+                        'md': '1.5rem',    // 24px
+                        'xl': '3rem',      // 48px
+                        'full': '9999px',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f6fafe; /* surface-bg */
+            color: #171c1f; /* on-surface */
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Hide scrollbar for horizontal scrolling but keep functionality */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px border-white/60;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- Icons (Inline SVGs) ---
+        const IconBed = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>;
+        const IconPlane = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5.5 4L5 15.5 3 15l-1 1 3 3 1-1-.5-2 3.5-3.5 4 5.5h1.2l.6-1.1c.4-.2.7-.6.6-1.1Z"/></svg>;
+        const IconCar = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>;
+        const IconTicket = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>;
+        const IconTaxi = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/><rect width="4" height="4" x="10" y="3" rx="1"/></svg>;
+        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconGlobe = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>;
+        const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+        const IconStore = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M12 3v6"/></svg>;
+        const IconMedical = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10Z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
+        const IconHelp = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const IconSparkles = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+        const IconHeadset = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-5Zm0 0a9 9 0 0 1 18 0v5a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3Zm-11 3h.01M16 11V7a4 4 0 0 0-8 0v4"/></svg>;
+        const IconMessageCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-11.7 8.38 8.38 0 0 1 3.8.9L21 3z"/></svg>;
+        const IconPhone = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+        const IconMail = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+        const IconChevronDown = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
+
+        const App = () => {
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-hidden">
+                    <HeaderAndHero />
+                    
+                    <main className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto -mt-10 relative z-10 pb-10 flex-1">
+                        <SearchHelpModule />
+                        <SupportCategories />
+                        <HumanSupportChannels />
+                        <ProcessFlow />
+                        <FAQSection />
+                    </main>
+
+                    <Footer />
+                    
+                    <FloatingAIAssistant />
+                </div>
+            );
+        };
+
+        // --- Shared Components ---
+
+        const NavPill = ({ icon, text, active, onClick }) => (
+            <button 
+                onClick={onClick}
+                className={`
+                flex items-center space-x-2 px-5 py-2.5 rounded-full whitespace-nowrap transition-all
+                ${active 
+                    ? 'border border-white/20 bg-white/10 backdrop-blur-md text-white font-semibold' 
+                    : 'text-white/80 hover:bg-white/5 hover:text-white font-medium'
+                }
+            `}>
+                {icon}
+                <span>{text}</span>
+            </button>
+        );
+
+        const HeaderAndHero = () => {
+            return (
+                <div className="bg-gradient-to-br from-primary-900 to-primary-container text-white pb-20 rounded-b-3xl">
+                    <div className="px-6 md:px-12 xl:px-24 py-5 flex items-center justify-between">
+                        <div className="text-2xl font-bold tracking-tight cursor-pointer" onClick={() => window.location.href='index.html'}>PQGO.com</div>
+                        
+                        <div className="hidden lg:flex items-center space-x-6 font-medium text-sm">
+                            <button className="flex items-center space-x-1 hover:text-tertiary-accent transition-colors"><IconGlobe /><span>VN</span></button>
+                            <div className="flex space-x-3 ml-2">
+                                <button className="bg-surface-lowest text-secondary-500 px-5 py-2 rounded-full font-semibold hover:bg-surface-low transition-colors">Đăng ký</button>
+                                <button className="bg-surface-lowest text-secondary-500 px-5 py-2 rounded-full font-semibold hover:bg-surface-low transition-colors">Đăng nhập</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="px-6 md:px-12 xl:px-24 pt-4 pb-8 flex space-x-2 overflow-x-auto hide-scrollbar">
+                        <NavPill icon={<IconBed />} text="Lưu trú" onClick={() => window.location.href='index.html'} />
+                        <NavPill icon={<IconPlane />} text="Chuyến bay" />
+                        <NavPill icon={<IconStore />} text="Cửa hàng" onClick={() => window.location.href='shop.html'} />
+                        <NavPill icon={<IconMedical />} text="Y tế" onClick={() => window.location.href='y-te.html'} />
+                        <NavPill icon={<IconHelp />} text="Hỗ trợ" active />
+                        <NavPill icon={<IconTaxi />} text="Taxi sân bay" onClick={() => window.location.href='taxisanbay.html'} />
+                    </div>
+
+                    <div className="px-6 md:px-12 xl:px-24 pt-8 pb-12 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="max-w-2xl">
+                            <h1 className="text-4xl md:text-[3.5rem] font-bold leading-[110%] tracking-tight mb-4 animate-fade-in">
+                                Chúng tôi sẵn sàng hỗ trợ bạn 24/7
+                            </h1>
+                            <p className="text-xl md:text-[1.375rem] font-medium leading-[140%] text-white/80 animate-fade-in" style={{animationDelay: '0.1s'}}>
+                                Kết hợp AI thông minh và đội ngũ chuyên gia địa phương để mang lại hành trình mượt mà nhất tại Phú Quốc.
+                            </p>
+                        </div>
+                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-md shadow-ethereal hidden md:block animate-fade-in" style={{animationDelay: '0.2s'}}>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.5)]"></div>
+                                <span className="text-xs font-bold uppercase tracking-widest text-white/90">Trạng thái hệ thống</span>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center gap-12">
+                                    <span className="text-sm font-medium text-white/70">AI Trợ lý</span>
+                                    <span className="text-xs font-bold text-green-400">ĐANG HOẠT ĐỘNG</span>
+                                </div>
+                                <div className="flex justify-between items-center gap-12">
+                                    <span className="text-sm font-medium text-white/70">Tổng đài viên</span>
+                                    <span className="text-xs font-bold text-green-400">TRỰC TUYẾN</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SearchHelpModule = () => {
+            return (
+                <div className="relative z-20">
+                    <div className="bg-white/90 backdrop-blur-xl shadow-ethereal rounded-md p-3 md:p-4 flex flex-col md:flex-row gap-4 border border-white/60">
+                        <div className="flex-1 relative">
+                            <div className="flex items-center bg-surface-low rounded-[1rem] px-5 h-14 md:h-16 group hover:bg-surface-highest transition-colors cursor-text border border-transparent">
+                                <IconSearch className="mr-3 shrink-0 text-on-surface/40 group-hover:text-secondary-500 transition-colors" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Tìm kiếm giải pháp hoặc câu hỏi của bạn..." 
+                                    className="bg-transparent border-none outline-none w-full text-on-surface text-sm md:text-base font-semibold placeholder:text-on-surface/40"
+                                />
+                            </div>
+                        </div>
+                        <button className="bg-secondary-500 hover:bg-primary-900 text-white font-bold text-lg px-12 h-14 md:h-16 rounded-xl transition-all shadow-md active:scale-95">
+                            Tìm trợ giúp
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const SupportCategories = () => {
+            const categories = [
+                { title: 'Gợi Ý Lịch Trình', desc: 'AI lên kế hoạch tối ưu theo ngân sách và sở thích.', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m20 12-8 8-8-8"/><path d="m20 4-8 8-8-8"/></svg>, color: 'bg-blue-50 text-blue-600' },
+                { title: 'Tra Cứu Thông Tin', desc: 'Sự thật về các điểm đến, giá vé và giờ mở cửa.', icon: <IconSearch />, color: 'bg-indigo-50 text-indigo-600' },
+                { title: 'Thời Tiết & Mùa Vụ', desc: 'Dự báo trực tiếp và tư vấn hoạt động theo mùa.', icon: <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 19.07-1.41-1.41"/><path d="M12 20v2"/><path d="m6.34 17.66-1.41 1.41"/><path d="M2 12h2"/><path d="m7.76 7.76-1.41-1.41"/><circle cx="12" cy="12" r="4"/></svg>, color: 'bg-amber-50 text-amber-600' },
+                { title: 'Hỗ Trợ Booking', desc: 'Thay đổi, hủy hoặc yêu cầu đặc biệt cho đặt chỗ.', icon: <IconTicket />, color: 'bg-emerald-50 text-emerald-600' },
+            ];
+
+            return (
+                <section className="py-10">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-10">
+                        <div>
+                            <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-2">Trợ Lý AI Thông Minh</h2>
+                            <p className="text-on-surface/70 text-[1rem]">Giải quết các câu hỏi của bạn ngay lập tức với công nghệ AI</p>
+                        </div>
+                        <button className="hidden md:block text-secondary-500 font-bold hover:text-primary-900 transition-colors text-sm bg-surface-low px-6 py-3 rounded-full">Trò chuyện với AI</button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {categories.map((cat, idx) => (
+                            <div key={idx} className="bg-surface-lowest p-8 rounded-md shadow-ethereal border border-surface-highest/20 hover:-translate-y-2 transition-transform duration-300 group cursor-pointer">
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${cat.color} group-hover:bg-primary-900 group-hover:text-white`}>
+                                    {cat.icon}
+                                </div>
+                                <h3 className="text-lg font-bold text-primary-900 mb-3 group-hover:text-secondary-500 transition-colors">{cat.title}</h3>
+                                <p className="text-sm text-on-surface/60 leading-relaxed">{cat.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const HumanSupportChannels = () => {
+            const channels = [
+                { type: 'Live Chat', contact: 'Trò chuyện ngay', note: 'Phản hồi trong 1 phút', icon: <IconMessageCircle />, color: 'bg-blue-600' },
+                { type: 'Tổng đài 24/7', contact: '1900 1234', note: 'Hỗ trợ khẩn cấp', icon: <IconPhone />, color: 'bg-red-500' },
+                { type: 'Email Support', contact: 'support@pqgo.vn', note: 'Giải quyết yêu cầu phức tạp', icon: <IconMail />, color: 'bg-slate-800' },
+            ];
+
+            return (
+                <section className="py-10 bg-surface-low/50 -mx-6 md:-mx-12 xl:-mx-24 px-6 md:px-12 xl:px-24 rounded-md">
+                    <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-10 text-center">Kênh Kết Nối Với Con Người</h2>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {channels.map((chan, idx) => (
+                            <div key={idx} className="bg-white rounded-md p-10 shadow-ethereal flex flex-col items-center text-center border border-white/60 border-b-4 border-b-secondary-500/20 hover:border-b-secondary-500 transition-all cursor-pointer group">
+                                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-white mb-6 shadow-lg ${chan.color} group-hover:scale-110 transition-transform`}>
+                                    {chan.icon}
+                                </div>
+                                <p className="text-xs font-bold uppercase tracking-widest text-on-surface/40 mb-2">{chan.type}</p>
+                                <h3 className="text-xl font-bold text-primary-900 mb-2">{chan.contact}</h3>
+                                <p className="text-sm text-on-surface/60">{chan.note}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const ProcessFlow = () => {
+            return (
+                <section className="py-14">
+                    <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-4 text-center">Quy Trình Hỗ Trợ Đa Tầng</h2>
+                    <p className="text-on-surface/70 mb-16 text-center max-w-2xl mx-auto">Hệ thống thông minh tự động phân loại yêu cầu để đảm bảo bạn nhận được sự trợ giúp nhanh nhất và chính xác nhất.</p>
+                    
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-12 relative">
+                        {/* Connector line (desktop) */}
+                        <div className="hidden md:block absolute top-16 left-[10%] right-[10%] h-0.5 border-t-2 border-dashed border-surface-highest -z-0"></div>
+                        
+                        <div className="flex-1 flex flex-col items-center text-center relative z-10 md:pt-0">
+                            <div className="w-12 h-12 bg-primary-900 text-white rounded-full flex items-center justify-center font-bold text-lg mb-6 shadow-lg border-4 border-surface-bg ring-8 ring-white">1</div>
+                            <h4 className="font-bold text-primary-900 mb-3 text-lg">AI Phản Hồi Tức Thì</h4>
+                            <p className="text-sm text-on-surface/60 leading-relaxed px-4">AI xử lý 90% các câu hỏi thường gặp ngay lập tức.</p>
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                            <div className="w-12 h-12 bg-secondary-500 text-white rounded-full flex items-center justify-center font-bold text-lg mb-6 shadow-lg border-4 border-surface-bg ring-8 ring-white">2</div>
+                            <h4 className="font-bold text-primary-900 mb-3 text-lg">Chuyên Viên Tiếp Nhận</h4>
+                            <p className="text-sm text-on-surface/60 leading-relaxed px-4">Nếu AI không thể trả lời, chuyên viên sẽ được kết nối sau 1-3 phút.</p>
+                        </div>
+
+                        <div className="flex-1 flex flex-col items-center text-center relative z-10">
+                            <div className="w-12 h-12 bg-tertiary-accent text-primary-900 rounded-full flex items-center justify-center font-bold text-lg mb-6 shadow-lg border-4 border-surface-bg ring-8 ring-white">3</div>
+                            <h4 className="font-bold text-primary-900 mb-3 text-lg">Hotline Toàn Cầu</h4>
+                            <p className="text-sm text-on-surface/60 leading-relaxed px-4">Dành cho các sự cố khẩn cấp, an ninh hoặc y tế trên đảo.</p>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const FAQSection = () => {
+            const faqs = [
+                { q: 'Tôi có thể liên hệ hỗ trợ ngoài giờ hành chính không?', a: 'Có! AI Chatbot của chúng tôi hoạt động 24/7 và có thể giải đáp hầu hết các câu hỏi. Ngoài giờ hành chính (22h-8h), chúng tôi vẫn có nhân viên trực cho các trường hợp khẩn cấp.' },
+                { q: 'AI có thể đặt tour hoặc đặt bàn giúp tôi không?', a: 'Chắc chắn. AI của PQGO được tích hợp với hệ thống đặt chỗ thời gian thực, cho phép bạn hoàn tất booking ngay trong cửa sổ chat.' },
+                { q: 'Làm thế nào để yêu cầu hoàn tiền?', a: 'Bạn có thể gửi yêu cầu hoàn tiền qua mục "Lịch sử đặt chỗ" trong tài khoản của mình hoặc liên hệ Live Chat để được hướng dẫn chi tiết theo chính sách của từng đối tác.' },
+                { q: 'AI hỗ trợ những ngôn ngữ nào?', a: 'Hiện tại AI của chúng tôi hỗ trợ Tiếng Việt, Tiếng Anh và Tiếng Hàn một cách trôi chảy nhất.' },
+            ];
+
+            const [openIdx, setOpenIdx] = React.useState(0);
+
+            return (
+                <section className="py-10 border-t border-surface-highest/40">
+                    <h2 className="text-[1.75rem] font-semibold text-primary-900 leading-[120%] tracking-tight mb-10">Câu Hỏi Thường Gặp</h2>
+                    
+                    <div className="max-w-6xl space-y-4">
+                        {faqs.map((faq, idx) => (
+                            <div key={idx} className="bg-white rounded-md shadow-ethereal-sm border border-surface-highest/20 overflow-hidden">
+                                <button 
+                                    className="w-full px-8 py-5 flex items-center justify-between text-left hover:bg-surface-low transition-colors"
+                                    onClick={() => setOpenIdx(openIdx === idx ? -1 : idx)}
+                                >
+                                    <span className="font-bold text-primary-900">{faq.q}</span>
+                                    <div className={`transition-transform duration-300 ${openIdx === idx ? 'rotate-180' : ''}`}>
+                                        <IconChevronDown />
+                                    </div>
+                                </button>
+                                {openIdx === idx && (
+                                    <div className="px-8 pb-6 text-sm text-on-surface/70 leading-relaxed animate-in fade-in slide-in-from-top-1 duration-200">
+                                        {faq.a}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = () => {
+            return (
+                <footer className="bg-primary-900 text-white rounded-t-[3rem] pt-16 pb-10 mt-6 relative overflow-hidden">
+                    <div className="absolute top-[-50px] right-[-50px] w-64 h-64 bg-secondary-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div className="px-6 md:px-12 xl:px-24 max-w-7xl mx-auto relative z-10">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+                            <div>
+                                <h4 className="font-bold mb-4 text-tertiary-accent tracking-wide text-sm uppercase">Khám phá</h4>
+                                <ul className="space-y-3 text-white/70 text-sm">
+                                    <li><a href="#" className="hover:text-white transition-colors">Quốc gia</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Khu vực</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Thành phố</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Quận</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Sân bay</a></li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 className="font-bold mb-4 text-tertiary-accent tracking-wide text-sm uppercase">Chỗ nghỉ</h4>
+                                <ul className="space-y-3 text-white/70 text-sm">
+                                    <li><a href="#" className="hover:text-white transition-colors">Nhà</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Căn hộ</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Resort</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Biệt thự</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Nhà nghỉ B&B</a></li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 className="font-bold mb-4 text-tertiary-accent tracking-wide text-sm uppercase">Công ty</h4>
+                                <ul className="space-y-3 text-white/70 text-sm">
+                                    <li><a href="#" className="hover:text-white transition-colors">Về PQGO.com</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Trợ giúp khách hàng</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Khám phá các tài nguyên</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Truyền thông</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Nhà đầu tư</a></li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 className="font-bold mb-4 text-tertiary-accent tracking-wide text-sm uppercase">Cài đặt</h4>
+                                <ul className="space-y-3 text-white/70 text-sm">
+                                    <li><a href="#" className="hover:text-white transition-colors">Tùy chọn Cookie</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Chính sách bảo mật</a></li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Điều khoản dịch vụ</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-white/50 border-t border-white/10">
+                            <p>Bản quyền © 1996–2026 PQGO.com™. Bảo lưu mọi quyền.</p>
+                            <p className="mt-2 md:mt-0">Thiết kế theo triết lý "The Ethereal Navigator"</p>
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
+
+        const FloatingAIAssistant = () => {
+            return (
+                <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 flex flex-col items-end group cursor-pointer">
+                    <div className="bg-white/90 backdrop-blur-xl shadow-ethereal px-5 py-3 rounded-2xl rounded-br-none mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0 border border-white/60 pointer-events-none">
+                        <p className="text-sm font-bold text-primary-900 mb-0.5">Trợ lý AI Hỗ Trợ</p>
+                        <p className="text-xs text-on-surface/70">Tôi có thể giúp bạn nhanh chóng!</p>
+                    </div>
+                    
+                    <button className="relative w-14 h-14 md:w-16 md:h-16 bg-primary-900 rounded-full flex items-center justify-center text-tertiary-accent shadow-ethereal hover:scale-105 hover:-translate-y-1 transition-all duration-300 group-hover:shadow-[0_20px_40px_rgba(0,22,41,0.2)] border border-white/10 overflow-hidden">
+                        <div className="absolute inset-0 bg-tertiary-accent/20 blur-xl animate-pulse"></div>
+                        <IconSparkles />
+                    </button>
+                </div>
+            );
+        };
+
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

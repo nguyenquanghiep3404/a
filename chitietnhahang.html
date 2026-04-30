@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Nhà hàng | Booking.com - The Ethereal Navigator</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Configuration based on Design System -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            900: '#001629',
+                            container: '#002b49'
+                        },
+                        secondary: {
+                            500: '#00658d'
+                        },
+                        tertiary: {
+                            accent: '#ffb870'
+                        },
+                        surface: {
+                            bg: '#f6fafe',
+                            low: '#f0f4f8',
+                            highest: '#dfe3e7',
+                            lowest: '#ffffff',
+                        },
+                        on: {
+                            surface: '#171c1f'
+                        }
+                    },
+                    boxShadow: {
+                        'ethereal': '0 12px 32px rgba(23, 28, 31, 0.06)',
+                        'ethereal-sm': '0 4px 12px rgba(23, 28, 31, 0.04)',
+                        'dropdown': '0 20px 50px rgba(0, 22, 41, 0.15)',
+                    },
+                    borderRadius: {
+                        'DEFAULT': '1rem',
+                        'md': '1.5rem',
+                        'xl': '3rem',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f6fafe;
+            color: #171c1f;
+            -webkit-font-smoothing: antialiased;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .animate-in {
+            animation: fadeInScale 0.4s ease-out forwards;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0, 22, 41, 0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- Icons ---
+        const IconBed = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>;
+        const IconPlane = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.6L3 8l5.5 4L5 15.5 3 15l-1 1 3 3 1-1-.5-2 3.5-3.5 4 5.5h1.2l.6-1.1c.4-.2.7-.6.6-1.1Z"/></svg>;
+        const IconTaxi = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/><rect width="4" height="4" x="10" y="3" rx="1"/></svg>;
+        const IconUtensils = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>;
+        const IconMedical = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2s10 4.48 10 10Z"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>;
+        const IconHelp = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>;
+        const IconMapPin = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
+        const IconStar = ({ filled }) => <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+        const IconClock = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+        const IconCalendar = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
+        const IconUser = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const IconTable = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><path d="M5 21v-2"/><path d="M19 21v-2"/></svg>;
+        const IconPhone = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+        const IconMail = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+        const IconSparkles = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>;
+        const IconX = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+        const IconPen = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>;
+        const IconChevronLeft = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
+        const IconChevronRight = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>;
+        const IconPlus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>;
+        const IconMinus = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/></svg>;
+        const IconInfo = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+
+        // Mock Restaurant Data
+        const restaurant = {
+            name: "L'Aura Dining Ethereal",
+            cuisine: "Fusion Pháp - Á",
+            location: "Tầng 50, Tháp Ethereal, Quận 1, TP. Hồ Chí Minh",
+            rating: 4.9,
+            reviews: 1250,
+            description: "Tọa lạc tại đỉnh cao của thành phố, L'Aura Dining mang đến trải nghiệm ẩm thực giao thoa đầy nghệ thuật. Dưới bàn tay của Bếp trưởng Michelin, những nguyên liệu địa phương tươi ngon nhất được biến tấu qua kỹ thuật nấu ăn thượng thừa của Pháp, tạo nên một bản giao hưởng hương vị đánh thức mọi giác quan.",
+            tags: ["Ngôi sao Michelin", "View toàn cảnh", "Fine Dining", "Lãng mạn"],
+            images: [
+                "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+                "https://images.unsplash.com/photo-1544148103-0773bf10d330?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                "https://images.unsplash.com/photo-1514933651103-005eec06c04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+            ],
+            signatureMenu: [
+                { name: "Thăn bò Wagyu A5 nướng than củi", desc: "Sốt tiêu xanh Phú Quốc, nấm Truffle đen, khoai tây nghiền nấm", price: "2.150.000 đ", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+                { name: "Cá Tuyết áp chảo xốt Saffron", desc: "Trứng cá muối Caviar, măng tây nướng, xốt bơ chanh vàng", price: "1.850.000 đ", img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" },
+                { name: "Súp nấm Truffle ngọc trai", desc: "Nấm Truffle trắng Alba, kem tươi, bánh mì bơ tỏi đen", price: "850.000 đ", img: "https://images.unsplash.com/photo-1548943487-a2e4b43b4850?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" }
+            ],
+            fullMenu: [
+                { category: "Khai vị (Appetizers)", items: [
+                    { name: "Gỏi cuốn tôm hùm Ethereal", desc: "Tôm hùm Nha Trang, lá bạc hà, xốt tương phộng cay", price: "450.000 đ", img: "https://images.unsplash.com/photo-1516684732162-798a0062be99?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" },
+                    { name: "Sò điệp Hokkaido áp chảo", desc: "Xốt bơ tỏi, kem ngô ngọt, mầm cải đá", price: "680.000 đ", img: "https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" }
+                ]},
+                { category: "Món chính (Main Course)", items: [
+                    { name: "Thăn bò Wagyu A5", desc: "Tiêu xanh, nấm Truffle đen", price: "2.150.000 đ", img: "https://images.unsplash.com/photo-1558030006-450675393462?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" },
+                    { name: "Cá Tuyết áp chảo xốt Saffron", desc: "Trứng cá muối Caviar, măng tây", price: "1.850.000 đ", img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" },
+                    { name: "Sườn cừu nướng thảo mộc", desc: "Khoai tây bi, xốt vang đỏ", price: "1.250.000 đ", img: "https://images.unsplash.com/photo-1551028150-64b9f398f678?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" }
+                ]},
+                { category: "Tráng miệng (Desserts)", items: [
+                    { name: "Mousse xoài cát Hòa Lộc", desc: "Cốt dừa non, vụn hạt dẻ cười", price: "250.000 đ", img: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" },
+                    { name: "Chocolate Fondant Michelin", desc: "Kem vani Madagascar, dâu tây Đà Lạt", price: "320.000 đ", img: "https://images.unsplash.com/photo-1541919329513-35f7af297129?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" }
+                ]}
+            ],
+            openHours: "11:30 - 14:00 & 17:30 - 23:00",
+            customerReviews: [
+                { user: "Minh Anh", date: "15 Thg 4, 2026", rating: 5, comment: "Một trải nghiệm tuyệt vời! Không gian sang trọng, món cá tuyết áp chảo thực sự là một kiệt tác. Bồi bàn rất chuyên nghiệp." },
+                { user: "Thảo Vy", date: "02 Thg 4, 2026", rating: 4.8, comment: "View đẹp nhất Sài Gòn. Món súp nấm rất thơm. Cần đặt bàn trước ít nhất 1 tuần cho vị trí gần cửa sổ." },
+                { user: "Hoàng Long", date: "20 Thg 3, 2026", rating: 4.5, comment: "Đồ ăn ngon, phục vụ tận tình. Tuy nhiên bãi gửi xe hơi xa lối vào tòa nhà." }
+            ]
+        };
+
+        const App = () => {
+            const [activeModal, setActiveModal] = React.useState(null);
+            const [isLoggedIn, setIsLoggedIn] = React.useState(false); 
+            const [tableCount, setTableCount] = React.useState(1);
+
+            return (
+                <div className="min-h-screen flex flex-col bg-surface-bg relative overflow-hidden">
+                    <HeaderWithNav isLoggedIn={isLoggedIn} onLoginToggle={() => setIsLoggedIn(!isLoggedIn)} />
+                    
+                    <main className="max-w-7xl mx-auto w-full py-6 md:py-8 px-4 md:px-12 xl:px-24 flex-1 animate-in">
+                        <GallerySection images={restaurant.images} />
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 mt-8 md:mt-12 relative z-10">
+                            <div className="lg:col-span-2 space-y-10 md:space-y-12">
+                                <HeaderInfo data={restaurant} />
+                                <AboutSection description={restaurant.description} tags={restaurant.tags} />
+                                <MenuSection 
+                                    menu={restaurant.signatureMenu} 
+                                    onSeeAll={() => setActiveModal('menu')} 
+                                />
+                                <ReviewsSection 
+                                    reviews={restaurant.customerReviews} 
+                                    onSeeAll={() => setActiveModal('reviews')}
+                                    onWriteReview={() => setActiveModal(isLoggedIn ? 'writeReview' : 'promptLogin')}
+                                    isLoggedIn={isLoggedIn}
+                                />
+                            </div>
+
+                            <div className="lg:col-span-1">
+                                <BookingForm tableCount={tableCount} onOpenModal={setActiveModal} />
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Modals */}
+                    {activeModal === 'menu' && <FullMenuModal menu={restaurant.fullMenu} onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'reviews' && <AllReviewsModal reviews={restaurant.customerReviews} onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'writeReview' && <WriteReviewModal onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'promptLogin' && <PromptLoginModal onLogin={() => {setIsLoggedIn(true); setActiveModal('writeReview');}} onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'date' && <DatePickerModal onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'time' && <TimePickerModal onClose={() => setActiveModal(null)} />}
+                    {activeModal === 'guests' && <TablePickerModal tableCount={tableCount} setTableCount={setTableCount} onClose={() => setActiveModal(null)} />}
+
+                    <FloatingAIAssistant />
+                    <Footer />
+                </div>
+            );
+        };
+
+        // --- Shared Components ---
+
+        const ModalOverlay = ({ title, onClose, children }) => (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+                <div className="absolute inset-0 bg-primary-900/60 backdrop-blur-sm" onClick={onClose}></div>
+                <div className="relative bg-white/95 backdrop-blur-2xl w-full max-w-2xl rounded-[2rem] shadow-dropdown flex flex-col max-h-[90vh] overflow-hidden border border-white/50">
+                    <div className="flex items-center justify-between p-6 md:p-8 border-b border-surface-highest/30">
+                        <h2 className="text-2xl font-bold text-primary-900 tracking-tight">{title}</h2>
+                        <button onClick={onClose} className="w-10 h-10 rounded-full bg-surface-low hover:bg-surface-highest flex items-center justify-center text-primary-900 transition-colors">
+                            <IconX />
+                        </button>
+                    </div>
+                    <div className="p-6 md:p-8 overflow-y-auto custom-scroll">
+                        {children}
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- Primary Components ---
+
+        const NavPill = ({ icon, text, active }) => (
+            <button className={`flex items-center space-x-2 px-4 py-2 rounded-full whitespace-nowrap transition-all text-xs font-semibold ${active ? 'bg-white/10 backdrop-blur-md text-white border border-white/20' : 'text-white/70 hover:bg-white/5 hover:text-white'}`}>
+                {icon} <span>{text}</span>
+            </button>
+        );
+
+        const HeaderWithNav = ({ isLoggedIn, onLoginToggle }) => (
+            <header className="bg-primary-900 text-white pt-4 pb-2">
+                <div className="px-4 md:px-12 xl:px-24 flex items-center justify-between mb-4">
+                    <div className="text-xl font-bold tracking-tight cursor-pointer">Booking.com</div>
+                    <div className="flex items-center space-x-3 text-xs font-bold uppercase">
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center cursor-pointer hover:bg-white/20 transition-colors">VN</div>
+                        <div onClick={onLoginToggle} className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer font-bold transition-all ${isLoggedIn ? 'bg-tertiary-accent text-primary-900' : 'bg-white/10 text-white hover:bg-white/20'}`}>
+                            {isLoggedIn ? 'T' : <IconUser />}
+                        </div>
+                    </div>
+                </div>
+                <div className="px-4 md:px-12 xl:px-24 flex space-x-2 overflow-x-auto hide-scrollbar pb-2">
+                    <NavPill icon={<IconBed />} text="Lưu trú" />
+                    <NavPill icon={<IconPlane />} text="Chuyến bay" />
+                    <NavPill icon={<IconUtensils />} text="Ẩm thực" active />
+                    <NavPill icon={<IconTaxi />} text="Taxi sân bay" />
+                    <NavPill icon={<IconMedical />} text="Y tế" />
+                </div>
+            </header>
+        );
+
+        const GallerySection = ({ images }) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 h-[250px] sm:h-[350px] md:h-[450px]">
+                <div className="md:col-span-2 rounded-[1.5rem] md:rounded-[2rem] overflow-hidden relative group cursor-pointer shadow-ethereal-sm w-full h-full">
+                    <img src={images[0]} alt="Nhà hàng" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                </div>
+                <div className="hidden md:flex flex-col gap-3 md:gap-4 w-full h-full">
+                    <div className="flex-1 rounded-[1rem] md:rounded-[1.5rem] overflow-hidden relative group cursor-pointer w-full h-full">
+                        <img src={images[1]} alt="Món ăn" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    </div>
+                    <div className="flex-1 rounded-[1rem] md:rounded-[1.5rem] overflow-hidden relative group cursor-pointer w-full h-full">
+                        <img src={images[2]} alt="Nội thất" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                        <div className="absolute inset-0 bg-primary-900/40 flex items-center justify-center">
+                            <span className="text-white font-bold text-xs tracking-widest uppercase">+12 Ảnh</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const HeaderInfo = ({ data }) => (
+            <section className="border-b border-surface-highest/50 pb-6 md:pb-8">
+                <h1 className="text-3xl md:text-4xl font-bold text-primary-900 tracking-tight leading-tight mb-4">{data.name}</h1>
+                <div className="flex flex-wrap items-center gap-y-4 gap-x-6 text-sm font-medium">
+                    <div className="flex items-center space-x-1 text-[#ffb870]">
+                        <IconStar filled /><IconStar filled /><IconStar filled /><IconStar filled /><IconStar filled />
+                        <span className="text-primary-900 font-bold ml-1">{data.rating}</span>
+                        <span className="text-on-surface/50 font-medium ml-1">({data.reviews} đánh giá)</span>
+                    </div>
+                    <div className="flex items-center text-secondary-500 font-bold">
+                        <IconUtensils className="mr-2" /> {data.cuisine}
+                    </div>
+                    <div className="flex items-center text-on-surface/60">
+                        <IconClock className="mr-2" /> {data.openHours}
+                    </div>
+                    <div className="flex items-center text-on-surface/40">
+                        <IconMapPin className="mr-2" /> {data.location}
+                    </div>
+                </div>
+            </section>
+        );
+
+        const AboutSection = ({ description, tags }) => (
+            <section>
+                <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-primary-900 tracking-tight mb-4">Về không gian ẩm thực</h2>
+                <p className="text-on-surface/70 leading-relaxed text-sm md:text-base mb-6">{description}</p>
+                <div className="flex flex-wrap gap-2">
+                    {tags.map(tag => (
+                        <span key={tag} className="bg-surface-low text-primary-900/70 font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-lg border border-surface-highest/50">
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+            </section>
+        );
+
+        const MenuSection = ({ menu, onSeeAll }) => (
+            <section>
+                <div className="flex justify-between items-end mb-6">
+                    <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-primary-900 tracking-tight">Thực đơn đặc trưng</h2>
+                    <button onClick={onSeeAll} className="text-xs md:text-sm font-bold text-secondary-500 hover:text-primary-900 transition-colors">Xem toàn bộ menu →</button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {menu.map((item, idx) => (
+                        <div key={idx} className="bg-surface-lowest p-3 rounded-[1.5rem] shadow-ethereal-sm border border-surface-highest/20 group flex flex-col hover:shadow-ethereal transition-all">
+                            <div className="h-32 rounded-xl overflow-hidden mb-3 relative">
+                                <img src={item.img} alt={item.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                            </div>
+                            <div className="flex flex-col flex-1">
+                                <h3 className="font-bold text-primary-900 text-sm leading-tight mb-1">{item.name}</h3>
+                                <p className="text-[11px] text-on-surface/50 line-clamp-2 mb-3">{item.desc}</p>
+                                <div className="mt-auto font-bold text-secondary-500 text-sm">{item.price}</div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
+
+        const FullMenuModal = ({ menu, onClose }) => (
+            <ModalOverlay title="Thực đơn toàn phần" onClose={onClose}>
+                {menu.map((cat, idx) => (
+                    <div key={idx} className="mb-12 last:mb-0">
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-secondary-500 mb-8 border-b border-secondary-500/10 pb-2">{cat.category}</h3>
+                        <div className="grid grid-cols-1 gap-8">
+                            {cat.items.map((item, i) => (
+                                <div key={i} className="flex items-center group">
+                                    <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-sm mr-6 relative border border-surface-highest/20">
+                                        <img src={item.img} alt={item.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                    </div>
+                                    <div className="flex-1 pr-4">
+                                        <h4 className="font-bold text-primary-900 text-base group-hover:text-secondary-500 transition-colors mb-1">{item.name}</h4>
+                                        <p className="text-xs text-on-surface/50 leading-relaxed line-clamp-2">{item.desc}</p>
+                                    </div>
+                                    <div className="font-bold text-primary-900 text-sm whitespace-nowrap bg-surface-low px-3 py-1 rounded-lg">{item.price}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </ModalOverlay>
+        );
+
+        const ReviewsSection = ({ reviews, onSeeAll, onWriteReview, isLoggedIn }) => (
+            <section className="pt-8 border-t border-surface-highest/50">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                    <div>
+                        <h2 className="text-[1.5rem] md:text-[1.75rem] font-bold text-primary-900 tracking-tight">Đánh giá thực khách</h2>
+                        <div className="flex items-center space-x-2 mt-1">
+                            <div className="bg-primary-900 text-white font-bold px-2 py-0.5 rounded text-sm">4.9</div>
+                            <div className="text-[10px] font-bold text-primary-900 uppercase tracking-widest">Tuyệt vời</div>
+                        </div>
+                    </div>
+                    <div className="flex space-x-3">
+                        <button 
+                            onClick={onWriteReview}
+                            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${isLoggedIn ? 'bg-secondary-500 text-white hover:bg-primary-900' : 'bg-surface-low text-primary-900 hover:bg-surface-highest'}`}
+                        >
+                            <IconPen /> <span>{isLoggedIn ? 'Viết đánh giá của bạn' : 'Đăng nhập để viết đánh giá'}</span>
+                        </button>
+                        <button onClick={onSeeAll} className="text-xs md:text-sm font-bold text-secondary-500 hover:text-primary-900 transition-colors px-2">Tất cả đánh giá →</button>
+                    </div>
+                </div>
+                <div className="space-y-6">
+                    {reviews.slice(0, 2).map((rev, i) => (
+                        <div key={i} className="bg-surface-lowest p-6 rounded-[1.5rem] shadow-ethereal-sm border border-surface-highest/10">
+                            <div className="flex justify-between items-start mb-3">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 rounded-full bg-secondary-500/10 flex items-center justify-center font-bold text-secondary-500">{rev.user[0]}</div>
+                                    <div><p className="font-bold text-primary-900 text-sm">{rev.user}</p><p className="text-[10px] text-on-surface/40 uppercase font-bold tracking-widest">{rev.date}</p></div>
+                                </div>
+                                <div className="flex text-[#ffb870] scale-75">{[...Array(5)].map((_, j) => <IconStar key={j} filled={j < Math.floor(rev.rating)} />)}</div>
+                            </div>
+                            <p className="text-sm text-on-surface/70 leading-relaxed italic">"{rev.comment}"</p>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
+
+        const AllReviewsModal = ({ reviews, onClose }) => (
+            <ModalOverlay title="Đánh giá từ khách hàng" onClose={onClose}>
+                <div className="space-y-6">
+                    {reviews.map((rev, i) => (
+                        <div key={i} className="bg-surface-low/30 p-6 rounded-[1.5rem] border border-surface-highest/20">
+                            <div className="flex justify-between items-start mb-3">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-10 h-10 rounded-full bg-primary-900 text-white flex items-center justify-center font-bold">{rev.user[0]}</div>
+                                    <div><p className="font-bold text-primary-900 text-sm">{rev.user}</p><p className="text-[10px] text-on-surface/40 uppercase font-bold tracking-widest">{rev.date}</p></div>
+                                </div>
+                                <div className="flex items-center space-x-1 bg-white px-2 py-1 rounded-lg shadow-sm border border-surface-highest/40">
+                                    <span className="text-xs font-bold text-primary-900">{rev.rating}</span>
+                                    <IconStar filled className="text-[#ffb870] w-3 h-3" />
+                                </div>
+                            </div>
+                            <p className="text-sm text-on-surface/70 leading-relaxed">"{rev.comment}"</p>
+                        </div>
+                    ))}
+                </div>
+            </ModalOverlay>
+        );
+
+        const WriteReviewModal = ({ onClose }) => {
+            const [rating, setRating] = React.useState(0);
+            return (
+                <ModalOverlay title="Viết đánh giá của bạn" onClose={onClose}>
+                    <div className="space-y-8">
+                        <div className="text-center">
+                            <p className="text-sm font-bold text-primary-900 mb-4">Bạn đánh giá trải nghiệm tại đây như thế nào?</p>
+                            <div className="flex justify-center space-x-3">
+                                {[1, 2, 3, 4, 5].map(i => (
+                                    <button key={i} onClick={() => setRating(i)} className={`transition-all ${i <= rating ? 'text-[#ffb870] scale-125' : 'text-surface-highest hover:text-secondary-500'}`}>
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill={i <= rating ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="bg-surface-low rounded-[1.5rem] p-6 group focus-within:bg-white focus-within:shadow-ethereal transition-all">
+                            <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-2">Chia sẻ chi tiết trải nghiệm</label>
+                            <textarea 
+                                placeholder="Hãy mô tả về món ăn, không gian và phục vụ..."
+                                className="w-full bg-transparent border-none outline-none text-sm font-medium text-primary-900 min-h-[150px] resize-none"
+                            ></textarea>
+                        </div>
+
+                        <div className="flex flex-col space-y-3">
+                            <button onClick={onClose} className="w-full bg-primary-900 text-white font-bold py-4 rounded-2xl hover:bg-secondary-500 transition-all shadow-md">Gửi đánh giá</button>
+                            <button onClick={onClose} className="w-full py-3 text-xs font-bold text-on-surface/40 hover:text-primary-900 transition-colors uppercase tracking-widest">Hủy bỏ</button>
+                        </div>
+                    </div>
+                </ModalOverlay>
+            );
+        };
+
+        const PromptLoginModal = ({ onLogin, onClose }) => (
+            <ModalOverlay title="Yêu cầu đăng nhập" onClose={onClose}>
+                <div className="text-center py-6">
+                    <div className="w-20 h-20 rounded-full bg-surface-low flex items-center justify-center mx-auto mb-6 text-secondary-500">
+                        <IconUser />
+                    </div>
+                    <h3 className="text-xl font-bold text-primary-900 mb-2">Bạn cần đăng nhập để viết đánh giá</h3>
+                    <p className="text-sm text-on-surface/50 mb-8 max-w-sm mx-auto">Vui lòng đăng nhập vào tài khoản Booking.com để chia sẻ trải nghiệm của bạn với cộng đồng.</p>
+                    <button onClick={onLogin} className="w-full bg-primary-900 text-white font-bold py-4 rounded-2xl hover:bg-secondary-500 transition-all shadow-md mb-4">Đăng nhập ngay</button>
+                    <button onClick={onClose} className="text-xs font-bold text-secondary-500 hover:underline">Quay lại trang chi tiết</button>
+                </div>
+            </ModalOverlay>
+        );
+
+        // --- Form Pickers ---
+
+        const DatePickerModal = ({ onClose }) => (
+            <ModalOverlay title="Chọn ngày đặt bàn" onClose={onClose}>
+                <div className="grid grid-cols-7 gap-2 text-center mb-4">
+                    {['CN','T2','T3','T4','T5','T6','T7'].map(d => <div key={d} className="text-[10px] font-bold text-on-surface/30 uppercase">{d}</div>)}
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                    {[...Array(19)].map((_, i) => <div key={i} />)}
+                    {[...Array(12)].map((_, i) => (
+                        <button key={i} onClick={onClose} className={`h-10 rounded-xl flex items-center justify-center font-bold text-sm ${i+19 === 19 ? 'bg-secondary-500 text-white shadow-md' : 'hover:bg-surface-low text-primary-900'}`}>{i+19}</button>
+                    ))}
+                </div>
+            </ModalOverlay>
+        );
+
+        const TimePickerModal = ({ onClose }) => {
+            const times = ["17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"];
+            return (
+                <ModalOverlay title="Chọn giờ đến" onClose={onClose}>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {times.map(t => (
+                            <button key={t} onClick={onClose} className={`py-4 rounded-2xl font-bold text-sm border border-surface-highest/30 transition-all ${t === "19:30" ? 'bg-primary-900 text-white shadow-md' : 'bg-surface-low hover:bg-surface-highest text-primary-900'}`}>{t}</button>
+                        ))}
+                    </div>
+                </ModalOverlay>
+            );
+        };
+
+        const TablePickerModal = ({ tableCount, setTableCount, onClose }) => {
+            return (
+                <ModalOverlay title="Chọn số bàn" onClose={onClose}>
+                    <div className="space-y-8">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="font-bold text-primary-900 text-base">Số lượng bàn</p>
+                                <p className="text-xs text-on-surface/40">Bàn tiêu chuẩn (2-6 người)</p>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                                <button onClick={() => tableCount > 1 && setTableCount(tableCount-1)} className="w-10 h-10 rounded-full border border-surface-highest flex items-center justify-center hover:bg-surface-low text-secondary-500 transition-all"><IconMinus /></button>
+                                <span className="font-bold text-lg text-primary-900 w-4 text-center">{tableCount}</span>
+                                <button onClick={() => setTableCount(tableCount+1)} className="w-10 h-10 rounded-full border border-surface-highest flex items-center justify-center hover:bg-surface-low text-secondary-500 transition-all"><IconPlus /></button>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-tertiary-accent/10 rounded-xl border border-tertiary-accent/20 flex items-start space-x-3">
+                            <div className="text-primary-900 shrink-0 mt-0.5"><IconInfo /></div>
+                            <p className="text-xs text-primary-900 font-medium leading-relaxed italic">
+                                Lời khuyên: Một bàn tiêu chuẩn tại nhà hàng có thể ngồi được tối đa 6 người. Nếu quý khách có đoàn 12 người, nên chọn 2 bàn để đảm bảo không gian thoải mái nhất.
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="w-full mt-10 bg-primary-900 text-white font-bold py-4 rounded-2xl hover:bg-secondary-500 transition-all shadow-md">Xác nhận số bàn</button>
+                </ModalOverlay>
+            );
+        };
+
+        const BookingForm = ({ tableCount, onOpenModal }) => (
+            <div className="lg:sticky lg:top-8 bg-surface-lowest rounded-[2rem] p-6 sm:p-8 shadow-dropdown border border-surface-highest/30">
+                <h3 className="text-xl font-bold text-primary-900 tracking-tight mb-6 text-center">Đặt bàn ngay</h3>
+                <div className="space-y-4">
+                    <div className="space-y-3 mb-6 pb-6 border-b border-surface-low">
+                        <div className="bg-surface-low p-3 px-4 rounded-2xl group border border-transparent focus-within:border-secondary-500/30 transition-all">
+                            <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-1">Tên người đặt bàn</label>
+                            <div className="flex items-center space-x-3"><IconUser className="text-on-surface/30" /><input type="text" placeholder="Nhập họ và tên của bạn" className="bg-transparent border-none outline-none w-full text-primary-900 font-bold text-sm" /></div>
+                        </div>
+                        <div className="bg-surface-low p-3 px-4 rounded-2xl group border border-transparent focus-within:border-secondary-500/30 transition-all">
+                            <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-1">Số điện thoại</label>
+                            <div className="flex items-center space-x-3"><IconPhone className="text-on-surface/30" /><input type="tel" placeholder="Nhập số điện thoại của bạn" className="bg-transparent border-none outline-none w-full text-primary-900 font-bold text-sm" /></div>
+                        </div>
+                        <div className="bg-surface-low p-3 px-4 rounded-2xl group border border-transparent focus-within:border-secondary-500/30 transition-all">
+                            <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-1">Địa chỉ Email</label>
+                            <div className="flex items-center space-x-3"><IconMail className="text-on-surface/30" /><input type="email" placeholder="Nhập địa chỉ email của bạn" className="bg-transparent border-none outline-none w-full text-primary-900 font-bold text-sm" /></div>
+                        </div>
+                    </div>
+                    <div onClick={() => onOpenModal('date')} className="bg-surface-low p-3 px-4 rounded-2xl group border border-transparent hover:border-secondary-500/20 transition-all cursor-pointer">
+                        <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-1">Ngày đặt</label>
+                        <div className="flex items-center space-x-2 text-primary-900 font-bold text-sm"><IconCalendar /> <span>Hôm nay, 19 Tháng 4</span></div>
+                    </div>
+                    <div className="flex space-x-3">
+                        <div onClick={() => onOpenModal('time')} className="flex-1 bg-surface-low p-3 px-4 rounded-2xl group border border-transparent hover:border-secondary-500/20 transition-all cursor-pointer">
+                            <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-1">Giờ đến</label>
+                            <div className="flex items-center space-x-2 text-primary-900 font-bold text-sm"><IconClock /> <span>19:30</span></div>
+                        </div>
+                        <div onClick={() => onOpenModal('guests')} className="flex-1 bg-surface-low p-3 px-4 rounded-2xl group border border-transparent hover:border-secondary-500/20 transition-all cursor-pointer">
+                            <label className="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest block mb-1">Số bàn</label>
+                            <div className="flex items-center space-x-2 text-primary-900 font-bold text-sm"><IconTable /> <span>{tableCount} Bàn</span></div>
+                        </div>
+                    </div>
+                </div>
+                <button className="w-full bg-primary-900 text-white font-bold py-4 rounded-2xl hover:bg-secondary-500 transition-all shadow-md text-sm mt-8 active:scale-95">Xác nhận đặt bàn</button>
+            </div>
+        );
+
+        const FloatingAIAssistant = () => (
+            <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[200] group cursor-pointer flex flex-col items-end">
+                <button className="relative w-16 h-16 bg-primary-900 rounded-full flex items-center justify-center text-tertiary-accent shadow-dropdown border border-white/10 overflow-hidden hover:scale-105 transition-all">
+                    <div className="absolute inset-0 bg-tertiary-accent/20 blur-xl animate-pulse"></div><IconSparkles />
+                </button>
+            </div>
+        );
+
+        const Footer = () => (
+            <footer className="bg-primary-900 text-white rounded-t-[2.5rem] md:rounded-t-[3rem] pt-12 pb-8 mt-16 relative overflow-hidden text-center px-4">
+                <div className="absolute top-[-100px] right-[-100px] w-96 h-96 bg-secondary-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+                <p className="text-[9px] md:text-[10px] font-bold text-white/30 uppercase tracking-widest relative z-10">© 1996–2026 Booking.com™ - The Ethereal Navigator</p>
+            </footer>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

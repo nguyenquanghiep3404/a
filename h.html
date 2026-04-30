@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xuất File Word - Phú Quốc Ecosystem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Styles cho phần hiển thị Preview trên web */
+        .markdown-preview h1 { font-size: 1.875rem; font-weight: bold; margin-bottom: 1rem; color: #1e40af; text-align: center; }
+        .markdown-preview h2 { font-size: 1.5rem; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
+        .markdown-preview h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #374151; }
+        .markdown-preview p { margin-bottom: 1rem; line-height: 1.6; color: #4b5563; }
+        .markdown-preview ul { list-style-type: disc; padding-left: 2rem; margin-bottom: 1rem; color: #4b5563; }
+        .markdown-preview li { margin-bottom: 0.5rem; }
+        .markdown-preview table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+        .markdown-preview th, .markdown-preview td { border: 1px solid #d1d5db; padding: 0.75rem; text-align: left; }
+        .markdown-preview th { background-color: #f3f4f6; font-weight: bold; color: #1f2937; }
+        .markdown-preview code { background-color: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; font-size: 0.875em; color: #ef4444; }
+        .markdown-preview em { font-style: italic; color: #6b7280; }
+        .markdown-preview hr { margin: 2rem 0; border: 0; border-top: 1px solid #e5e7eb; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8 px-4 sm:px-8">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Header Controls -->
+        <div class="bg-white rounded-t-xl shadow-sm border-b border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">Trình trích xuất tài liệu Word</h2>
+                <p class="text-sm text-gray-500">Xem trước nội dung bên dưới và tải xuống định dạng .doc</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="copyContent()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy Nội Dung
+                </button>
+                <button onclick="downloadAsWord()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Tải xuống File Word (.doc)
+                </button>
+            </div>
+        </div>
+
+        <!-- Document Preview -->
+        <div class="bg-white rounded-b-xl shadow-lg p-8 sm:p-12">
+            <div id="source-html" class="markdown-preview">
+                <!-- Nội dung HTML sẽ được Render vào đây -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 transform transition-all duration-300 translate-y-20 opacity-0 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 z-50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span id="toast-message">Thông báo</span>
+    </div>
+
+    <!-- Source Markdown (Ẩn đi để tránh lỗi xử lý chuỗi) -->
+    <textarea id="markdown-source" style="display:none;">
+# 🗺️ TÀI LIỆU HƯỚNG DẪN BÀN GIAO & ROADMAP HỆ THỐNG
+Dự án: Hệ Sinh Thái Du Lịch Kỹ Thuật Số Phú Quốc (Phú Quốc Ecosystem)
+
+---
+
+## 🔐 1. TÀI KHOẢN TRUY CẬP MẪU (TEST ACCOUNTS)
+Để thuận tiện cho quá trình kiểm thử và nghiệm thu, hệ thống đã nạp sẵn dữ liệu giả lập (Seeded Data). Vui lòng sử dụng các tài khoản sau:
+
+| Loại Tài Khoản | Email | Mật khẩu (Password) | Ghi chú |
+| :--- | :--- | :--- | :--- |
+| **System Admin**| `admin@pqgo.vn` | `adminpassword123` | Quản trị viên hệ thống tiêu chuẩn |
+| **Chủ Khách Sạn**| `hotel1@pqgo.vn` đến `hotel10@pqgo.vn`| `password123` | Test quản trị Booking khách sạn |
+| **Chủ Nhà Hàng** | `resto1@pqgo.vn` đến `resto10@pqgo.vn`| `password123` | Test gian hàng số (thực đơn) |
+| **Chủ Tour** | `tour1@pqgo.vn` đến `tour10@pqgo.vn` | `password123` | Test duyệt, thêm, quản lý slots Tour |
+
+*(Hệ thống hỗ trợ du khách đăng ký mới trực tiếp qua giao diện Home, tuy nhiên có thể mock tạm tài khoản user qua các email trên với Role merchant trong Dashboard).*
+
+---
+
+## 📈 2. PHÂN TÍCH TIẾN ĐỘ DỰ ÁN (DỰA TRÊN NGHIỆP VỤ)
+
+### 🏨 Chức năng Đặt Phòng Khách Sạn (Hotel Booking): Hoàn thiện **~85 - 95%**
+- **Điểm sáng đã thực hiện:**
+  - Giao diện Listing & Details 100% chuẩn *Ethereal Navigator* cao cấp (Sử dụng Tonal Layering, loại bỏ borders).
+  - Tích hợp Modal tìm kiếm động (Search Modal Edit), lấy params Location/Check-in/Guests thông minh chuẩn OTA.
+  - Workflow đặt phòng khép kín: Giới hạn người dùng (buộc đăng nhập) -> Màn hình Checkout -> Chức năng Thanh toán -> Callback xử lý vé.
+  - Chức năng quản lý Booking Users: Xem vé cá nhân, áp dụng luồng Logic hủy vé (Refund/Non-refundable policies).
+ 
+### 🏝️ Chức năng Đặt Tour & Trải Nghiệm (Tour Booking): Hoàn thiện **~90%**
+- **Điểm sáng đã thực hiện:** - Giao diện Booking trải nghiệm mượt mà, đồng bộ với Merchant Portal quản lý suất trong thời gian thực. (Dynamic Tour Availability).
+  - Nghiệp vụ thanh toán/mất slot (Timeout Checkout), verify Post-Payment với PayPal. 
+  - Quy trình Admin Approval Tour chặt chẽ: Tour của Merchant chưa được Verify thì Admin không thể phê duyệt.
+  - Vé điện tử (E-ticket/QR code) sau thanh toán thành công đã có mặt ở `/account`.
+- **Phần còn lại:** Triển khai Notification qua SMS hoặc Sync trạng thái thời tiết báo hủy tour.
+
+### 🍔 Gian Hàng Số F&B (Module B) & Modules Khác
+- **F&B (Tiến độ ~70%):** Cấu trúc Data Entity gồm `Merchant`, `Storefront`, `MenuItem` đã được seed vào hệ thống. Các trang danh sách đang lấy từ API lên giao diện `/shop`. Tính năng Đặt suất ăn và Booking Bàn qua Websocket sẽ cập nhật tại Phase 2.
+- **Smart Map, An Toàn/Y Tế (Modules C & D):** UI đã được thiết lập tại `/care` & `/safety`. Entity `MedicalRequest` đã dựng ở DB. Tiếp theo cần kết nối với Offline Map API (Mapbox) để load tileset PQ.
+
+---
+
+## 🌐 3. SƠ ĐỒ ĐỊNH TUYẾN CHÍNH (ROUTES GUIDE)
+
+### Cổng Frontend (Cổng Người dùng - Port 3000)
+| Module / Tên trang | Route (Path) | Mục đích / Trạng thái |
+| :--- | :--- | :--- |
+| **Trang chủ** | `/` | Tìm kiếm tổng hợp |
+| **Xác thực User** | `/login`, `/register`, `/forgot-password` | Hệ thống Auth của khách du lịch |
+| **Lịch sử / Account** | `/account` | Quản lý vé Hotel/Tour đã mua |
+| **Khách sạn (Vòng lặp booking)**| `/hotels` -> `/hotels/[id]` -> `/hotels/checkout` | Danh sách, Chi tiết, và Thanh toán |
+| **Tour du lịch** | `/book` -> `/book/checkout` | Chọn tour đảo, lặn san hô, VinWonders |
+| **Ẩm thực & Shop** | `/shop` -> `/shop/[id]` | Khám phá quán ăn, bar (Digital Storefront) |
+| **Tính năng Di chuyển** | `/taxi`, `/flights` | Taxi sân bay, Vé bay (Mockup) |
+| **Sức khỏe & Y tế** | `/care`, `/safety` | Bác sĩ tận vùng, Hotline khẩn cấp |
+| **Sim 4G / Telecom** | `/telecom` | Mua SIM Du lịch tại đảo |
+
+### Cổng Merchant Portal (Cổng Đối tác - Port 3000)
+| Khu vực | Route (Path) | Mục đích |
+| :--- | :--- | :--- |
+| **Xác thực Merchant** | `/merchant/login`, `/merchant/register` | Đăng ký & Đăng nhập cho Nhà cung cấp |
+| **Quản trị gian hàng** | `/merchant/dashboard` | Thêm món ăn, phòng nghỉ, mở bán Tour |
+
+### Cổng Admin Dashboard (Cổng Quản trị - Port 3000)
+| Khu vực | Route (Path) | Mục đích |
+| :--- | :--- | :--- |
+| **Đăng nhập Admin** | `/admin/login` | |
+| **Dashboard Control**| `/admin` | Thống kê số lượng giao dịch toàn platform |
+| **Users & Merchants**| `/admin/users`, `/admin/merchants` | Duyệt (Verify) Merchant KYC |
+| **Giao dịch (Bookings)**| `/admin/bookings`, `/admin/tours` | Quản lý/Hủy vé, Approval/Reject Tour |
+
+### Cổng API Backend (RESTFul API - Port 5000)
+**BaseURL:** `http://localhost:5000/api/v1`
+Hệ thống Micro-routing hiện có:
+- `/auth`: Đăng nhập, Register.
+- `/users`: Update Profile, Get Session.
+- `/merchants`: Phê duyệt trạng thái (Verify/Approve).
+- `/hotels` & `/tours`: Get Listings, Details, Filter (Price, Stars).
+- `/bookings`: Tạo đơn hàng (Create Order), Tính tiền cọc (Checkout logic).
+- `/payments`: Call API Gateway, Approve Order, Generate eTicket.
+    </textarea>
+
+    <script>
+        // 1. Render Markdown sang HTML lúc tải trang
+        document.addEventListener('DOMContentLoaded', () => {
+            const rawMarkdown = document.getElementById('markdown-source').value;
+            const htmlContent = marked.parse(rawMarkdown);
+            document.getElementById('source-html').innerHTML = htmlContent;
+        });
+
+        // Hàm hiển thị thông báo Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 2. Chức năng Copy nội dung
+        function copyContent() {
+            const contentBlock = document.getElementById('source-html');
+            const range = document.createRange();
+            range.selectNode(contentBlock);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                showToast('Đã sao chép nội dung vào khay nhớ tạm!');
+            } catch (err) {
+                showToast('Không thể sao chép. Vui lòng thử bôi đen thủ công.');
+            }
+            window.getSelection().removeAllRanges();
+        }
+
+        // 3. Chức năng chính: Tải xuống dưới dạng File Word (.doc)
+        function downloadAsWord() {
+            // Định dạng CSS nhúng dành riêng cho MS Word
+            const wordStyles = `
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; color: #000; }
+                    h1 { color: #1e40af; font-size: 24pt; text-align: center; margin-bottom: 20px; }
+                    h2 { color: #1f2937; font-size: 18pt; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 24px; }
+                    h3 { color: #374151; font-size: 14pt; margin-top: 16px; }
+                    p { margin-bottom: 12px; }
+                    table { border-collapse: collapse; width: 100%; margin-top: 15px; margin-bottom: 15px; }
+                    th, td { border: 1px solid #000000; padding: 8px; text-align: left; vertical-align: top; }
+                    th { background-color: #f2f2f2; font-weight: bold; }
+                    code { background-color: #f4f4f4; padding: 2px 5px; font-family: 'Courier New', monospace; font-size: 10pt; color: #d32f2f;}
+                    ul { margin-bottom: 15px; }
+                    li { margin-bottom: 5px; }
+                    hr { border: 0; border-top: 1px solid #ccc; margin: 20px 0; }
+                </style>
+            `;
+
+            // Lấy HTML đã render
+            const documentContent = document.getElementById('source-html').innerHTML;
+
+            // Xây dựng cấu trúc HTML đạt chuẩn để Word hiểu
+            const htmlDocTemplate = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office'
+                      xmlns:w='urn:schemas-microsoft-com:office:word'
+                      xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>ROUTES_GUIDE</title>
+                    ${wordStyles}
+                </head>
+                <body>
+                    ${documentContent}
+                </body>
+                </html>
+            `;
+
+            // Chuyển đối thành Blob MS Word
+            const blob = new Blob(['\ufeff', htmlDocTemplate], {
+                type: 'application/msword'
+            });
+
+            // Kích hoạt tiến trình Download
+            const url = URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = 'Tai_Lieu_Huong_Dan_Ban_Giao_He_Thong.doc';
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            // Dọn dẹp memory
+            URL.revokeObjectURL(url);
+            
+            showToast('Đang tải file Word về máy của bạn!');
+        }
+    </script>
+</body>
+</html>
